@@ -9,12 +9,12 @@ import BaseButton from '../components/BaseButton.vue'
       class="reveal overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,rgba(236,72,153,0.9),rgba(249,168,212,0.96),rgba(245,215,142,0.95))] px-5 py-8 text-white shadow-soft sm:px-8"
     >
       <div class="max-w-2xl">
-        <p class="font-display text-lg font-bold text-white/90">Nos encantara compartir este dia</p>
+        <p class="font-display text-lg font-bold text-white/90">Nos encantará compartir este día</p>
         <h2 class="mt-3 font-display text-4xl font-extrabold leading-tight">
-          ¡Te esperamos con mucho carino!
+          ¡Te esperamos con mucho cariño!
         </h2>
         <p class="mt-4 text-base leading-8 text-white/90">
-          Gracias por visitar esta invitacion. No te olvides de confirmar asistencia y dejarnos un mensaje bonito.
+          Gracias por visitar esta invitación. No te olvides de confirmar asistencia y dejarnos un mensaje bonito.
         </p>
       </div>
 

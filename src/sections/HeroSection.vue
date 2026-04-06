@@ -17,6 +17,9 @@ import { eventData } from '../data/event'
         <div class="relative z-10 grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
           <div class="max-w-2xl">
             <SparkleBadge />
+            <div class="mt-4 inline-flex rounded-full bg-gold px-4 py-2 text-sm font-extrabold text-ink shadow-card">
+              Invitación actualizada
+            </div>
 
             <h1
               class="mt-5 font-display text-[2.4rem] font-extrabold leading-none text-ink sm:text-6xl"

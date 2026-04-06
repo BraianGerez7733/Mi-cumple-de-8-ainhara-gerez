@@ -7,7 +7,7 @@ const cards = [
   {
     title: 'Fecha',
     value: eventData.date,
-    detail: 'Reserva este dia para una fiesta adorable y llena de sonrisas.',
+    detail: 'Reservá este día para una fiesta adorable y llena de sonrisas.',
     tone: 'blush',
   },
   {
@@ -35,7 +35,7 @@ const cards = [
       class="section-frame reveal"
     >
       <SectionHeading
-        eyebrow="Invitacion"
+        eyebrow="Invitación"
         :title="eventData.invitationTitle"
         :text="eventData.invitationText"
       />

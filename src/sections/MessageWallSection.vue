@@ -68,8 +68,8 @@ const handleSubmit = async () => {
     >
       <SectionHeading
         eyebrow="Muro de mensajes"
-        title="Dejale un mensaje a la cumpleanera"
-        text="Podes escribir un mensajito bonito para recordar este dia tan especial."
+        title="Dejale un mensaje a la cumpleañera"
+        text="Podés escribir un mensajito bonito para recordar este día tan especial."
       />
 
       <div class="mt-6 rounded-[1.85rem] border border-white/90 bg-white/90 p-5 shadow-card sm:p-6">
@@ -172,7 +172,7 @@ const handleSubmit = async () => {
               v-if="!guestbook.loading && !guestbook.messages.length"
               class="rounded-[1.5rem] border border-dashed border-glam/30 bg-white/80 p-5 text-sm leading-7 text-ink/75"
             >
-              Todavia no hay mensajes guardados. El primero puede ser el tuyo.
+              Todavía no hay mensajes guardados. El primero puede ser el tuyo.
             </article>
           </div>
         </div>

@@ -23,7 +23,7 @@ const errors = reactive({
 const attendanceLabels = {
   yes: 'Si, voy a asistir',
   no: 'No puedo asistir',
-  maybe: 'Todavia no se',
+  maybe: 'Todavía no sé',
 }
 
 const attendanceTone = {
@@ -77,8 +77,8 @@ const handleSubmit = async () => {
         <div>
           <SectionHeading
             eyebrow="RSVP"
-            title="Confirma tu asistencia"
-            text="Nos encantaria saber si vas a venir. Por favor, deja tu nombre y confirma tu asistencia."
+            title="Confirmá tu asistencia"
+            text="Nos encantaría saber si vas a venir. Por favor, dejá tu nombre y confirmá tu asistencia."
           />
 
           <div class="mt-6 grid grid-cols-3 gap-3">
@@ -87,7 +87,7 @@ const handleSubmit = async () => {
               <p class="mt-2 font-display text-3xl font-extrabold text-ink">{{ rsvp.summary.yes }}</p>
             </BaseCard>
             <BaseCard>
-              <p class="text-xs font-bold uppercase tracking-[0.18em] text-glam/70">Aun no saben</p>
+              <p class="text-xs font-bold uppercase tracking-[0.18em] text-glam/70">Aún no saben</p>
               <p class="mt-2 font-display text-3xl font-extrabold text-ink">{{ rsvp.summary.maybe }}</p>
             </BaseCard>
             <BaseCard tone="gold">
@@ -217,10 +217,10 @@ const handleSubmit = async () => {
             v-if="!rsvp.loading && !rsvp.entries.length"
             class="rounded-[1.5rem] border border-dashed border-glam/30 bg-white/80 p-5 text-sm leading-7 text-ink/75"
           >
-            Todavia no hay confirmaciones guardadas. La primera puede aparecer aca.
-          </article>
+              Todavía no hay confirmaciones guardadas. La primera puede aparecer acá.
+            </article>
+          </div>
         </div>
       </div>
-    </div>
   </section>
 </template>
