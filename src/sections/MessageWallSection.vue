@@ -72,6 +72,20 @@ const handleSubmit = async () => {
         text="Podes escribir un mensajito bonito para recordar este dia tan especial."
       />
 
+      <div
+        class="mt-4 rounded-2xl px-4 py-3 text-sm font-bold"
+        :class="
+          guestbook.backendMode === 'supabase'
+            ? 'bg-[#ecfdf3] text-[#17653a]'
+            : 'bg-[#fff6dd] text-[#8a5b00]'
+        "
+      >
+        {{ guestbook.backendLabel }}
+        <span v-if="guestbook.backendMode !== 'supabase'">
+          . Para guardar mensajes reales entre todos los invitados, completa `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
+        </span>
+      </div>
+
       <div class="mt-6 rounded-[1.85rem] border border-white/90 bg-white/90 p-5 shadow-card sm:p-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -160,13 +174,6 @@ const handleSubmit = async () => {
               Siempre visibles
             </p>
           </div>
-
-          <p
-            v-if="guestbook.loading && !guestbook.messages.length"
-            class="mb-4 rounded-2xl bg-white/80 px-4 py-3 text-sm font-semibold text-ink/70"
-          >
-            Cargando mensajes guardados...
-          </p>
 
           <div class="grid gap-4 md:grid-cols-2">
             <MessageCard

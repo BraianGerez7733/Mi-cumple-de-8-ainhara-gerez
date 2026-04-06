@@ -73,6 +73,20 @@ const handleSubmit = async () => {
       data-reveal
       class="section-frame reveal"
     >
+      <div
+        class="mb-6 rounded-2xl px-4 py-3 text-sm font-bold"
+        :class="
+          rsvp.backendMode === 'supabase'
+            ? 'bg-[#ecfdf3] text-[#17653a]'
+            : 'bg-[#fff6dd] text-[#8a5b00]'
+        "
+      >
+        {{ rsvp.backendLabel }}
+        <span v-if="rsvp.backendMode !== 'supabase'">
+          . Las confirmaciones reales entre dispositivos se activan cuando completes las variables de Supabase.
+        </span>
+      </div>
+
       <div class="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div>
           <SectionHeading
