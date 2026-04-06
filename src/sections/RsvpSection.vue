@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import BaseButton from '../components/BaseButton.vue'
 import BaseCard from '../components/BaseCard.vue'
 import SectionHeading from '../components/SectionHeading.vue'
@@ -25,6 +25,20 @@ const attendanceLabels = {
   no: 'No puedo asistir',
   maybe: 'Todavia no se',
 }
+
+const attendanceTone = {
+  yes: 'bg-[#ecfdf3] text-[#17653a]',
+  maybe: 'bg-[#fff6dd] text-[#8a5b00]',
+  no: 'bg-[#ffe6ef] text-[#a03868]',
+}
+
+const visibleEntries = computed(() => props.rsvp.entries.slice(0, 12))
+
+const formatDate = (value) =>
+  new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit',
+    month: 'short',
+  }).format(new Date(value))
 
 const reset = () => {
   form.name = ''
@@ -152,6 +166,60 @@ const handleSubmit = async () => {
             {{ rsvp.error }}
           </p>
         </form>
+      </div>
+
+      <div class="mt-6 rounded-[1.8rem] border border-white/90 bg-blush/35 p-4 shadow-card sm:p-5">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p class="font-display text-2xl font-extrabold text-ink">Confirmaciones visibles</p>
+            <p class="text-sm leading-6 text-ink/75">
+              Aca se ven las respuestas guardadas de los invitados.
+            </p>
+          </div>
+          <p class="rounded-full bg-white/90 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-glam/70">
+            {{ rsvp.entries.length }} respuestas
+          </p>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <article
+            v-if="rsvp.loading"
+            class="rounded-[1.5rem] bg-white/85 p-4 text-sm font-semibold text-ink/70"
+          >
+            Cargando confirmaciones...
+          </article>
+
+          <article
+            v-for="entry in visibleEntries"
+            :key="entry.id"
+            class="rounded-[1.5rem] border border-white/90 bg-white/90 p-4 shadow-card"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="font-display text-xl font-bold text-ink">{{ entry.name }}</h3>
+                <p class="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-glam/65">
+                  Invitado
+                </p>
+              </div>
+              <span
+                class="rounded-full px-3 py-1 text-xs font-bold"
+                :class="attendanceTone[entry.attendance]"
+              >
+                {{ attendanceLabels[entry.attendance] }}
+              </span>
+            </div>
+            <p class="mt-4 text-sm font-semibold text-ink/65">
+              Respondio el {{ formatDate(entry.created_at) }}
+            </p>
+          </article>
+
+          <article
+            v-if="!rsvp.loading && !rsvp.entries.length"
+            class="rounded-[1.5rem] border border-dashed border-glam/30 bg-white/80 p-5 text-sm leading-7 text-ink/75"
+          >
+            Todavia no hay confirmaciones guardadas. La primera puede aparecer aca.
+          </article>
+        </div>
       </div>
     </div>
   </section>

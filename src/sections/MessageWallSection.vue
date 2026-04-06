@@ -158,7 +158,7 @@ const handleSubmit = async () => {
             </p>
           </div>
 
-          <div class="pretty-scrollbar grid max-h-[34rem] gap-4 overflow-auto pr-1">
+          <div class="grid gap-4">
             <article
               v-if="guestbook.loading"
               class="rounded-[1.5rem] bg-white/80 p-5 text-sm font-semibold text-ink/70"
