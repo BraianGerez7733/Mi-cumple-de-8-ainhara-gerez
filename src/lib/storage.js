@@ -2,9 +2,31 @@ import { hasSupabase, supabase } from './supabase'
 
 const RSVP_KEY = 'ainhara-birthday-rsvp'
 const MESSAGES_KEY = 'ainhara-birthday-messages'
+const REMOTE_TIMEOUT_MS = 3500
 
 const sortByNewest = (items) =>
   [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+const dedupeById = (items) => {
+  const seen = new Map()
+
+  items.forEach((item) => {
+    if (item?.id) {
+      seen.set(item.id, item)
+    }
+  })
+
+  return [...seen.values()]
+}
+
+const withTimeout = async (promise, timeoutMs = REMOTE_TIMEOUT_MS) => {
+  return await Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error('Supabase timeout')), timeoutMs)
+    }),
+  ])
+}
 
 const localRead = (key) => {
   if (typeof window === 'undefined') {
@@ -28,20 +50,28 @@ const localWrite = (key, items) => {
 }
 
 export async function listRsvps() {
-  if (hasSupabase) {
-    const { data, error } = await supabase
-      .from('rsvps')
-      .select('*')
-      .order('created_at', { ascending: false })
+  const localItems = sortByNewest(localRead(RSVP_KEY))
+
+  if (!hasSupabase) {
+    return localItems
+  }
+
+  try {
+    const { data, error } = await withTimeout(
+      supabase.from('rsvps').select('*').order('created_at', { ascending: false }),
+    )
 
     if (error) {
       throw error
     }
 
-    return data
+    const merged = sortByNewest(dedupeById([...(data ?? []), ...localItems]))
+    localWrite(RSVP_KEY, merged)
+    return merged
+  } catch (error) {
+    console.warn('RSVP fallback to localStorage', error)
+    return localItems
   }
-
-  return sortByNewest(localRead(RSVP_KEY))
 }
 
 export async function saveRsvp(payload) {
@@ -51,37 +81,48 @@ export async function saveRsvp(payload) {
     ...payload,
   }
 
+  const current = localRead(RSVP_KEY)
+  const next = sortByNewest(dedupeById([record, ...current]))
+  localWrite(RSVP_KEY, next)
+
   if (hasSupabase) {
-    const { data, error } = await supabase.from('rsvps').insert(payload).select().single()
+    try {
+      const { error } = await withTimeout(supabase.from('rsvps').upsert(record))
 
-    if (error) {
-      throw error
+      if (error) {
+        throw error
+      }
+    } catch (error) {
+      console.warn('RSVP remote sync failed, kept locally', error)
     }
-
-    return data
   }
 
-  const current = localRead(RSVP_KEY)
-  const next = sortByNewest([record, ...current])
-  localWrite(RSVP_KEY, next)
   return record
 }
 
 export async function listMessages() {
-  if (hasSupabase) {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .order('created_at', { ascending: false })
+  const localItems = sortByNewest(localRead(MESSAGES_KEY))
+
+  if (!hasSupabase) {
+    return localItems
+  }
+
+  try {
+    const { data, error } = await withTimeout(
+      supabase.from('messages').select('*').order('created_at', { ascending: false }),
+    )
 
     if (error) {
       throw error
     }
 
-    return data
+    const merged = sortByNewest(dedupeById([...(data ?? []), ...localItems]))
+    localWrite(MESSAGES_KEY, merged)
+    return merged
+  } catch (error) {
+    console.warn('Messages fallback to localStorage', error)
+    return localItems
   }
-
-  return sortByNewest(localRead(MESSAGES_KEY))
 }
 
 export async function saveMessage(payload) {
@@ -91,18 +132,21 @@ export async function saveMessage(payload) {
     ...payload,
   }
 
+  const current = localRead(MESSAGES_KEY)
+  const next = sortByNewest(dedupeById([record, ...current]))
+  localWrite(MESSAGES_KEY, next)
+
   if (hasSupabase) {
-    const { data, error } = await supabase.from('messages').insert(payload).select().single()
+    try {
+      const { error } = await withTimeout(supabase.from('messages').upsert(record))
 
-    if (error) {
-      throw error
+      if (error) {
+        throw error
+      }
+    } catch (error) {
+      console.warn('Messages remote sync failed, kept locally', error)
     }
-
-    return data
   }
 
-  const current = localRead(MESSAGES_KEY)
-  const next = sortByNewest([record, ...current])
-  localWrite(MESSAGES_KEY, next)
   return record
 }
