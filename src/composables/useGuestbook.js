@@ -1,6 +1,5 @@
 import { computed, onMounted, ref } from 'vue'
 import { getCachedMessages, listMessages, saveMessage } from '../lib/storage'
-import { backendLabel, backendMode } from '../lib/supabase'
 
 export function useGuestbook() {
   const messages = ref(getCachedMessages())
@@ -55,8 +54,6 @@ export function useGuestbook() {
     submitting,
     feedback,
     error,
-    backendMode,
-    backendLabel,
     load,
     submit,
   }

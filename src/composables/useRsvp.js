@@ -1,6 +1,5 @@
 import { computed, onMounted, ref } from 'vue'
 import { getCachedRsvps, listRsvps, saveRsvp } from '../lib/storage'
-import { backendLabel, backendMode } from '../lib/supabase'
 
 export function useRsvp() {
   const entries = ref(getCachedRsvps())
@@ -65,8 +64,6 @@ export function useRsvp() {
     feedback,
     error,
     summary,
-    backendMode,
-    backendLabel,
     load,
     submit,
   }

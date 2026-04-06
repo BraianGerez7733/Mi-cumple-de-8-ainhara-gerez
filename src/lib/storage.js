@@ -106,15 +106,15 @@ export async function saveRsvp(payload) {
   localWrite(RSVP_KEY, next)
 
   if (hasSupabase) {
-    try {
-      const { error } = await withTimeout(supabase.from('rsvps').upsert(record))
-
-      if (error) {
-        throw error
-      }
-    } catch (error) {
-      console.warn('RSVP remote sync failed, kept locally', error)
-    }
+    withTimeout(supabase.from('rsvps').upsert(record))
+      .then(({ error }) => {
+        if (error) {
+          throw error
+        }
+      })
+      .catch((error) => {
+        console.warn('RSVP remote sync failed, kept locally', error)
+      })
   }
 
   return record
@@ -157,15 +157,15 @@ export async function saveMessage(payload) {
   localWrite(MESSAGES_KEY, next)
 
   if (hasSupabase) {
-    try {
-      const { error } = await withTimeout(supabase.from('messages').upsert(record))
-
-      if (error) {
-        throw error
-      }
-    } catch (error) {
-      console.warn('Messages remote sync failed, kept locally', error)
-    }
+    withTimeout(supabase.from('messages').upsert(record))
+      .then(({ error }) => {
+        if (error) {
+          throw error
+        }
+      })
+      .catch((error) => {
+        console.warn('Messages remote sync failed, kept locally', error)
+      })
   }
 
   return record
