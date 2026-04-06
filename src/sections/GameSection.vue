@@ -28,6 +28,39 @@ const game = reactive({
 let animationFrame = 0
 const BEST_SCORE_KEY = 'ainhara-capybara-best-score'
 
+const saveBestScore = (value) => {
+  try {
+    window.localStorage.setItem(BEST_SCORE_KEY, String(value))
+  } catch (error) {
+    console.warn('Best score could not be persisted', error)
+  }
+}
+
+const readBestScore = () => {
+  try {
+    const saved = window.localStorage.getItem(BEST_SCORE_KEY)
+    return saved ? Number(saved) || 0 : 0
+  } catch (error) {
+    console.warn('Best score could not be restored', error)
+    return 0
+  }
+}
+
+const drawRoundedRect = (ctx, x, y, width, height, radius) => {
+  const r = Math.min(radius, width / 2, height / 2)
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.lineTo(x + width - r, y)
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r)
+  ctx.lineTo(x + width, y + height - r)
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height)
+  ctx.lineTo(x + r, y + height)
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r)
+  ctx.lineTo(x, y + r)
+  ctx.quadraticCurveTo(x, y, x + r, y)
+  ctx.closePath()
+}
+
 const bestLabel = computed(() => status.best)
 
 const resizeCanvas = () => {
@@ -108,8 +141,7 @@ const drawGift = (ctx, item) => {
     ctx.save()
     ctx.translate(item.x, item.y)
     ctx.fillStyle = '#F9A8D4'
-    ctx.beginPath()
-    ctx.roundRect(-11, -9, 22, 18, 7)
+    drawRoundedRect(ctx, -11, -9, 22, 18, 7)
     ctx.fill()
     ctx.fillStyle = '#FFF9FB'
     ctx.fillRect(-2, -9, 4, 18)
@@ -219,7 +251,7 @@ const update = (timestamp) => {
       if (item.kind === 'gift') {
         status.score += 1
         status.best = Math.max(status.best, status.score)
-        window.localStorage.setItem(BEST_SCORE_KEY, String(status.best))
+        saveBestScore(status.best)
       } else {
         game.ended = true
         status.running = false
@@ -260,8 +292,7 @@ const moveTo = (clientX) => {
 }
 
 onMounted(() => {
-  const savedBest = window.localStorage.getItem(BEST_SCORE_KEY)
-  status.best = savedBest ? Number(savedBest) || 0 : 0
+  status.best = readBestScore()
   resizeCanvas()
   draw()
   window.addEventListener('resize', resizeCanvas)

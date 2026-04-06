@@ -1,8 +1,8 @@
 import { computed, onMounted, ref } from 'vue'
-import { listRsvps, saveRsvp } from '../lib/storage'
+import { getCachedRsvps, listRsvps, saveRsvp } from '../lib/storage'
 
 export function useRsvp() {
-  const entries = ref([])
+  const entries = ref(getCachedRsvps())
   const loading = ref(false)
   const submitting = ref(false)
   const feedback = ref('')
@@ -21,7 +21,7 @@ export function useRsvp() {
   })
 
   const load = async () => {
-    loading.value = true
+    loading.value = !entries.value.length
     error.value = ''
 
     try {

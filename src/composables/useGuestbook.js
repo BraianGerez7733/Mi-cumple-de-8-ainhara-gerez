@@ -1,8 +1,8 @@
 import { computed, onMounted, ref } from 'vue'
-import { listMessages, saveMessage } from '../lib/storage'
+import { getCachedMessages, listMessages, saveMessage } from '../lib/storage'
 
 export function useGuestbook() {
-  const messages = ref([])
+  const messages = ref(getCachedMessages())
   const loading = ref(false)
   const submitting = ref(false)
   const feedback = ref('')
@@ -11,7 +11,7 @@ export function useGuestbook() {
   const total = computed(() => messages.value.length)
 
   const load = async () => {
-    loading.value = true
+    loading.value = !messages.value.length
     error.value = ''
 
     try {

@@ -3,6 +3,10 @@ import { hasSupabase, supabase } from './supabase'
 const RSVP_KEY = 'ainhara-birthday-rsvp'
 const MESSAGES_KEY = 'ainhara-birthday-messages'
 const REMOTE_TIMEOUT_MS = 3500
+const memoryStore = {
+  [RSVP_KEY]: [],
+  [MESSAGES_KEY]: [],
+}
 
 const sortByNewest = (items) =>
   [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -30,24 +34,40 @@ const withTimeout = async (promise, timeoutMs = REMOTE_TIMEOUT_MS) => {
 
 const localRead = (key) => {
   if (typeof window === 'undefined') {
-    return []
+    return memoryStore[key] ?? []
   }
 
   try {
     const parsed = JSON.parse(window.localStorage.getItem(key) ?? '[]')
-    return Array.isArray(parsed) ? parsed : []
+    if (Array.isArray(parsed)) {
+      memoryStore[key] = parsed
+      return parsed
+    }
+    return memoryStore[key] ?? []
   } catch {
-    return []
+    return memoryStore[key] ?? []
   }
 }
 
 const localWrite = (key, items) => {
+  memoryStore[key] = items
+
   if (typeof window === 'undefined') {
-    return
+    return true
   }
 
-  window.localStorage.setItem(key, JSON.stringify(items))
+  try {
+    window.localStorage.setItem(key, JSON.stringify(items))
+    return true
+  } catch (error) {
+    console.warn('localStorage write fallback to memory', error)
+    return false
+  }
 }
+
+export const getCachedRsvps = () => sortByNewest(localRead(RSVP_KEY))
+
+export const getCachedMessages = () => sortByNewest(localRead(MESSAGES_KEY))
 
 export async function listRsvps() {
   const localItems = sortByNewest(localRead(RSVP_KEY))
