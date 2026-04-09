@@ -2,12 +2,19 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import BaseButton from '../components/BaseButton.vue'
 import SectionHeading from '../components/SectionHeading.vue'
+import LeaderboardCard from '../components/LeaderboardCard.vue'
+import { useLeaderboard } from '../composables/useLeaderboard'
+
+const leaderboard = useLeaderboard()
 
 const canvasRef = ref(null)
 const status = reactive({
   running: false,
   score: 0,
   best: 0,
+  playerName: '',
+  hasStarted: false,
+  scoreSaved: false,
 })
 
 const game = reactive({
@@ -255,6 +262,10 @@ const update = (timestamp) => {
       } else {
         game.ended = true
         status.running = false
+        if (status.score > 0 && !status.scoreSaved && status.playerName.trim()) {
+           status.scoreSaved = true
+           leaderboard.submit({ nombre_jugador: status.playerName.trim(), puntuacion: status.score })
+        }
       }
       item.y = game.height + 100
     }
@@ -270,8 +281,14 @@ const update = (timestamp) => {
 }
 
 const startGame = () => {
+  if (!status.playerName.trim()) {
+    // Requires name, but wait, if hasStarted is false, form handles the block
+    return
+  }
   cancelAnimationFrame(animationFrame)
   status.score = 0
+  status.scoreSaved = false
+  status.hasStarted = true
   game.items = []
   game.lastSpawn = 0
   game.lastFrame = 0
@@ -296,7 +313,6 @@ onMounted(() => {
   resizeCanvas()
   draw()
   window.addEventListener('resize', resizeCanvas)
-  startGame()
 })
 
 onBeforeUnmount(() => {
@@ -327,32 +343,43 @@ onBeforeUnmount(() => {
               El objetivo es simple: mueve a la capibara con tu dedo, junta regalos rosados y evita los charquitos marrones.
             </p>
 
-            <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div class="rounded-2xl bg-blush/55 p-4">
-                <p class="text-xs font-bold uppercase tracking-[0.16em] text-glam/70">Puntaje actual</p>
-                <p class="mt-2 font-display text-3xl font-extrabold text-ink">{{ status.score }}</p>
-              </div>
-              <div class="rounded-2xl bg-[#fff6dd] p-4">
-                <p class="text-xs font-bold uppercase tracking-[0.16em] text-glam/70">Mejor puntaje</p>
-                <p class="mt-2 font-display text-3xl font-extrabold text-ink">{{ bestLabel }}</p>
-              </div>
+            <div v-if="!status.hasStarted" class="mt-4 flex flex-col gap-4">
+              <label class="block">
+                <span class="mb-2 block text-sm font-bold uppercase tracking-[0.16em] text-glam/70">
+                  Jugador
+                </span>
+                <input
+                  v-model="status.playerName"
+                  type="text"
+                  placeholder="Tu nombre"
+                  class="w-full rounded-2xl border border-glam/15 bg-cream px-4 py-3 text-base text-ink outline-none transition focus:border-glam focus:ring-4 focus:ring-glam/10"
+                />
+              </label>
+              <BaseButton type="button" @click="startGame" :disabled="!status.playerName.trim()">
+                Empezar a Jugar
+              </BaseButton>
             </div>
 
-            <div class="mt-5 flex flex-col gap-3 sm:flex-row">
-              <BaseButton
-                type="button"
-                @click="resetGame"
-              >
-                Reiniciar
-              </BaseButton>
-              <BaseButton
-                type="button"
-                variant="secondary"
-                @click="startGame"
-              >
-                Jugar otra vez
-              </BaseButton>
-            </div>
+            <template v-else>
+              <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div class="rounded-2xl bg-blush/55 p-4">
+                  <p class="text-xs font-bold uppercase tracking-[0.16em] text-glam/70">Puntaje actual</p>
+                  <p class="mt-2 font-display text-3xl font-extrabold text-ink">{{ status.score }}</p>
+                </div>
+                <div class="rounded-2xl bg-[#fff6dd] p-4">
+                  <p class="text-xs font-bold uppercase tracking-[0.16em] text-glam/70">Mejor puntaje</p>
+                  <p class="mt-2 font-display text-3xl font-extrabold text-ink">{{ bestLabel }}</p>
+                </div>
+              </div>
+
+              <div v-if="game.ended" class="mt-5 flex flex-col gap-3 sm:flex-row">
+                <BaseButton type="button" @click="startGame">Jugar otra vez</BaseButton>
+              </div>
+            </template>
+          </div>
+          
+          <div class="mt-6">
+             <LeaderboardCard :leaderboard="leaderboard" />
           </div>
         </div>
 

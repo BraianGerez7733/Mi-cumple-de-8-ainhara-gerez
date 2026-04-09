@@ -30,10 +30,8 @@ export function useGuestbook() {
     error.value = ''
 
     try {
-      const record = await saveMessage(payload)
-      messages.value = [record, ...messages.value].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      )
+      await saveMessage(payload)
+      await load()
       feedback.value = '¡Tu mensaje quedo guardado!'
       return true
     } catch (err) {

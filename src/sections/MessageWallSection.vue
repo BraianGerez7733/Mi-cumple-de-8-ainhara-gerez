@@ -88,7 +88,7 @@ const handleSubmit = async () => {
         </div>
 
         <form
-          class="mt-6 space-y-4"
+          class="mx-auto mt-6 w-full max-w-xl space-y-4"
           @submit.prevent="handleSubmit"
         >
           <label class="block">

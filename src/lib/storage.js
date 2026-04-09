@@ -95,27 +95,26 @@ export async function listRsvps() {
 }
 
 export async function saveRsvp(payload) {
+  const fallbackId = Math.random().toString(36).substring(2) + Date.now().toString(36)
+  const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : fallbackId
+
   const record = {
-    id: crypto.randomUUID(),
+    id,
     created_at: new Date().toISOString(),
     ...payload,
+  }
+
+  if (hasSupabase) {
+    const { error } = await withTimeout(supabase.from('rsvps').insert(record))
+    if (error) {
+      console.warn('RSVP remota sync falló', error)
+      throw new Error('Supabase sync failed')
+    }
   }
 
   const current = localRead(RSVP_KEY)
   const next = sortByNewest(dedupeById([record, ...current]))
   localWrite(RSVP_KEY, next)
-
-  if (hasSupabase) {
-    withTimeout(supabase.from('rsvps').insert(record))
-      .then(({ error }) => {
-        if (error) {
-          throw error
-        }
-      })
-      .catch((error) => {
-        console.warn('RSVP remote sync failed, kept locally', error)
-      })
-  }
 
   return record
 }
@@ -146,26 +145,69 @@ export async function listMessages() {
 }
 
 export async function saveMessage(payload) {
+  const fallbackId = Math.random().toString(36).substring(2) + Date.now().toString(36)
+  const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : fallbackId
+
   const record = {
-    id: crypto.randomUUID(),
+    id,
     created_at: new Date().toISOString(),
     ...payload,
+  }
+
+  if (hasSupabase) {
+    const { error } = await withTimeout(supabase.from('messages').insert(record))
+    if (error) {
+      console.warn('Messages remote sync falló', error)
+      throw new Error('Supabase sync failed')
+    }
   }
 
   const current = localRead(MESSAGES_KEY)
   const next = sortByNewest(dedupeById([record, ...current]))
   localWrite(MESSAGES_KEY, next)
 
+  return record
+}
+
+// Leaderboard Logic
+export async function listTopScores() {
+  if (!hasSupabase) {
+    return []
+  }
+
+  try {
+    const { data, error } = await withTimeout(
+      supabase.from('juego_puntuaciones').select('*').order('puntuacion', { ascending: false }).limit(5)
+    )
+
+    if (error) {
+      throw error
+    }
+
+    return data ?? []
+  } catch (error) {
+    console.warn('Leaderboard fetch failed', error)
+    return []
+  }
+}
+
+export async function saveScore(payload) {
+  const fallbackId = Math.random().toString(36).substring(2) + Date.now().toString(36)
+  const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : fallbackId
+
+  const record = {
+    id,
+    creado_en: new Date().toISOString(),
+    nombre_jugador: payload.nombre_jugador,
+    puntuacion: payload.puntuacion
+  }
+
   if (hasSupabase) {
-    withTimeout(supabase.from('messages').insert(record))
-      .then(({ error }) => {
-        if (error) {
-          throw error
-        }
-      })
-      .catch((error) => {
-        console.warn('Messages remote sync failed, kept locally', error)
-      })
+    const { error } = await withTimeout(supabase.from('juego_puntuaciones').insert(record))
+    if (error) {
+      console.warn('Score remote sync falló', error)
+      return null
+    }
   }
 
   return record

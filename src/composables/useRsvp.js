@@ -40,10 +40,8 @@ export function useRsvp() {
     error.value = ''
 
     try {
-      const record = await saveRsvp(payload)
-      entries.value = [record, ...entries.value].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      )
+      await saveRsvp(payload)
+      await load()
       feedback.value = '¡Gracias por confirmar!'
       return true
     } catch (err) {
