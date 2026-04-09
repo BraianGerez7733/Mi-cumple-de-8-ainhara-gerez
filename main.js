@@ -21,9 +21,9 @@ function initGravity() {
   canvas.width  = W
   canvas.height = H
 
-  const GRAV     = 0.45
-  const FRICTION = 0.992
-  const BOUNCE   = 0.62
+  const GRAV     = 0.22
+  const FRICTION = 0.995
+  const BOUNCE   = 0.58
   const ITEMS    = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫','🌟','🎊','🍬']
 
   let particles = []
@@ -72,7 +72,7 @@ function initGravity() {
   }
 
   function updateCard() {
-    card.vy += GRAV * gravDir * 0.6
+    card.vy += GRAV * gravDir * 0.45
     card.vx *= FRICTION; card.vy *= FRICTION
     card.x  += card.vx;  card.y  += card.vy
     card.angle += card.av; card.av *= 0.97
