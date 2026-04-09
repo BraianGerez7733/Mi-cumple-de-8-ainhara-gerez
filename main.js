@@ -27,7 +27,7 @@ function initGravity() {
   })
 
   function startPhysics(W, H) {
-    const ITEMS = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫']
+    const ITEMS = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫','🦛','🐿️','🌟','🎊','🍬','🎠']
 
     // Matter.js headless engine
     const engine = Matter.Engine.create()
