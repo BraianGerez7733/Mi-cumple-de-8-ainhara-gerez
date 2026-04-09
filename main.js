@@ -21,9 +21,9 @@ function initGravity() {
   canvas.width  = W
   canvas.height = H
 
-  const GRAV     = 0.10
-  const FRICTION = 0.997
-  const BOUNCE   = 0.52
+  const GRAV     = 0.06
+  const FRICTION = 0.998
+  const BOUNCE   = 0.46
   const ITEMS    = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫','🌟','🎊','🍬']
 
   let particles = []
@@ -54,8 +54,12 @@ function initGravity() {
     x: W / 2, y: -(CARD_H / 2 + 20),
     vx: (Math.random() - 0.5) * 1.5, vy: 0.5,
     angle: (Math.random() - 0.5) * 0.25,
-    av: (Math.random() - 0.5) * 0.012
+    av: (Math.random() - 0.5) * 0.012,
+    anchored: false,
+    anchorStarted: false
   }
+  const ANCHOR_DELAY = 8000   // ms hasta que el cartel se centra
+  const cardStartTime = performance.now()
 
   function updateParticle(p) {
     p.vy += GRAV * gravDir
@@ -72,15 +76,42 @@ function initGravity() {
   }
 
   function updateCard() {
-    card.vy += GRAV * gravDir * 0.35
-    card.vx *= FRICTION; card.vy *= FRICTION
-    card.x  += card.vx;  card.y  += card.vy
-    card.angle += card.av; card.av *= 0.97
-    const hW = CARD_W / 2, hH = CARD_H / 2
-    if (gravDir ===  1 && card.y + hH > H)   { card.y = H - hH; card.vy *= -BOUNCE * 0.7; card.av *= 0.6 }
-    if (gravDir === -1 && card.y - hH < 0)   { card.y = hH;     card.vy *= -BOUNCE * 0.7; card.av *= 0.6 }
-    if (card.x - hW < 0) { card.x = hW;     card.vx =  Math.abs(card.vx) * BOUNCE }
-    if (card.x + hW > W) { card.x = W - hW; card.vx = -Math.abs(card.vx) * BOUNCE }
+    if (card === dragging) return  // no update if being dragged
+
+    const elapsed = performance.now() - cardStartTime
+
+    if (!card.anchored && elapsed > ANCHOR_DELAY) {
+      card.anchored = true
+    }
+
+    if (card.anchored) {
+      // Resorte suave hacia el centro
+      const tx = W / 2
+      const ty = H / 2
+      const k = 0.028           // fuerza del resorte
+      const damp = 0.88         // amortiguación
+      card.vx += (tx - card.x) * k
+      card.vy += (ty - card.y) * k
+      card.vx *= damp
+      card.vy *= damp
+      card.x  += card.vx
+      card.y  += card.vy
+      // Enderezar ángulo hacia 0
+      card.av += (0 - card.angle) * 0.06
+      card.av *= 0.80
+      card.angle += card.av
+    } else {
+      // Física normal
+      card.vy += GRAV * gravDir * 0.35
+      card.vx *= FRICTION; card.vy *= FRICTION
+      card.x  += card.vx;  card.y  += card.vy
+      card.angle += card.av; card.av *= 0.97
+      const hW = CARD_W / 2, hH = CARD_H / 2
+      if (gravDir ===  1 && card.y + hH > H)   { card.y = H - hH; card.vy *= -BOUNCE * 0.7; card.av *= 0.6 }
+      if (gravDir === -1 && card.y - hH < 0)   { card.y = hH;     card.vy *= -BOUNCE * 0.7; card.av *= 0.6 }
+      if (card.x - hW < 0) { card.x = hW;     card.vx =  Math.abs(card.vx) * BOUNCE }
+      if (card.x + hW > W) { card.x = W - hW; card.vx = -Math.abs(card.vx) * BOUNCE }
+    }
   }
 
   function drawBg() {
@@ -154,9 +185,13 @@ function initGravity() {
   }
   function endDrag() {
     if (!dragging) return
-    dragging.vx = (dragging.x - (dragging._px ?? dragging.x)) * 0.6
-    dragging.vy = (dragging.y - (dragging._py ?? dragging.y)) * 0.6
-    dragging.av = (Math.random() - 0.5) * 0.06
+    dragging.vx = (dragging.x - (dragging._px ?? dragging.x)) * 0.4
+    dragging.vy = (dragging.y - (dragging._py ?? dragging.y)) * 0.4
+    dragging.av = (Math.random() - 0.5) * 0.04
+    // If the card was anchored and dragged, keep its anchor but let spring pull it back
+    if (dragging === card && card.anchored) {
+      card.vx *= 0.3; card.vy *= 0.3
+    }
     dragging = null
   }
 
