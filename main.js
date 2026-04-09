@@ -61,9 +61,29 @@ function initGravity() {
     return body
   }
 
-  // Lluvia inicial
-  for (let i = 0; i < 25; i++) {
-    setTimeout(() => spawnEmoji(ITEMS[i % ITEMS.length]), i * 120)
+  // Lluvia inicial de emojis
+  for (let i = 0; i < 22; i++) {
+    setTimeout(() => spawnEmoji(ITEMS[i % ITEMS.length]), i * 130)
+  }
+
+  // --- Cartel de cumpleaños como cuerpo físico ---
+  const cardEl = document.getElementById('birthday-card')
+  const CARD_W = Math.min(380, W * 0.85)
+  const CARD_H = 160
+  const cardBody = Matter.Bodies.rectangle(W / 2, -200, CARD_W, CARD_H, {
+    restitution: 0.5,
+    friction: 0.3,
+    frictionAir: 0.02,
+    density: 0.01,
+    angle: (Math.random() - 0.5) * 0.4
+  })
+  Matter.World.add(engine.world, cardBody)
+
+  function updateCardEl() {
+    const p = cardBody.position
+    const a = cardBody.angle
+    cardEl.style.transform = `translate(${p.x - CARD_W / 2}px, ${p.y - CARD_H / 2}px) rotate(${a}rad)`
+    cardEl.style.width = CARD_W + 'px'
   }
 
   // --- Arrastre con mouse / touch ---
@@ -111,25 +131,26 @@ function initGravity() {
       dragging = null; canvas.style.cursor = 'default'
     }
   })
+  // Touch: only preventDefault when grabbing an emoji (allows scroll otherwise)
   canvas.addEventListener('touchstart', e => {
-    e.preventDefault()
     const p = getPos(e)
-    dragging = bodyAt(p.x, p.y)
-    if (dragging) {
-      dragOffX = p.x - dragging.position.x
-      dragOffY = p.y - dragging.position.y
-      Matter.Body.setStatic(dragging, true)
+    const found = bodyAt(p.x, p.y)
+    if (found) {
+      e.preventDefault()
+      dragging = found
+      dragOffX = p.x - found.position.x
+      dragOffY = p.y - found.position.y
+      Matter.Body.setStatic(found, true)
     }
   }, { passive: false })
   canvas.addEventListener('touchmove', e => {
-    e.preventDefault()
     if (dragging) {
+      e.preventDefault()
       const p = getPos(e)
       Matter.Body.setPosition(dragging, { x: p.x - dragOffX, y: p.y - dragOffY })
     }
   }, { passive: false })
   canvas.addEventListener('touchend', e => {
-    e.preventDefault()
     if (dragging) { Matter.Body.setStatic(dragging, false); dragging = null }
   }, { passive: false })
 
@@ -163,6 +184,7 @@ function initGravity() {
     ctx.clearRect(0, 0, W, H)
     drawBg()
     drawEmojis()
+    updateCardEl()
   }
   requestAnimationFrame(loop)
 
@@ -174,6 +196,8 @@ function initGravity() {
     Matter.Body.setPosition(wallR,   { x: W + 25,  y: H / 2  })
     Matter.Body.setPosition(ceiling, { x: W / 2,   y: -25    })
     Matter.Body.setPosition(wallL,   { x: -25,      y: H / 2  })
+    // Re-center card constraint
+    Matter.Body.setVertices(cardBody, Matter.Bodies.rectangle(W / 2, cardBody.position.y, Math.min(380, W * 0.85), CARD_H).vertices)
   })
 
   // Controles
