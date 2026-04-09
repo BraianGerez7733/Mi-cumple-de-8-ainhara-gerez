@@ -10,216 +10,231 @@ const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 const supabase = (SUPA_URL && SUPA_KEY) ? createClient(SUPA_URL, SUPA_KEY) : null
 
 // ============================================================
-// SECTION 1: ANTI-GRAVITY WORLD (Headless Matter.js + propio render loop)
+// SECTION 1: ANTI-GRAVITY WORLD — todo dibujado en canvas
 // ============================================================
 function initGravity() {
   const canvas = document.getElementById('gravity-canvas')
   const ctx = canvas.getContext('2d')
+  const section = document.getElementById('gravity')
 
-  function resizeCanvas() {
-    canvas.width  = canvas.offsetWidth  || window.innerWidth
-    canvas.height = canvas.offsetHeight || window.innerHeight
-  }
-  resizeCanvas()
+  // Defer until after layout so offsetWidth/Height are real
+  requestAnimationFrame(() => {
+    const W0 = section.offsetWidth  || window.innerWidth
+    const H0 = section.offsetHeight || window.innerHeight
+    canvas.width  = W0
+    canvas.height = H0
+    startPhysics(W0, H0)
+  })
 
-  const ITEMS = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫']
+  function startPhysics(W, H) {
+    const ITEMS = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫']
 
-  // --- Motor de física headless (sin Matter.Render) ---
-  const engine = Matter.Engine.create()
-  engine.world.gravity.y = 1
+    // Matter.js headless engine
+    const engine = Matter.Engine.create()
+    engine.world.gravity.y = 2.5  // gravedad fuerte y visible
 
-  function makeWall(x, y, w, h) {
-    return Matter.Bodies.rectangle(x, y, w, h, { isStatic: true })
-  }
+    function wall(x, y, w, h) {
+      return Matter.Bodies.rectangle(x, y, w, h, { isStatic: true, friction: 0.5 })
+    }
+    const ground  = wall(W / 2,    H + 25,   W * 4, 50)
+    const wallL   = wall(-25,      H / 2,    50, H * 4)
+    const wallR   = wall(W + 25,   H / 2,    50, H * 4)
+    const ceiling = wall(W / 2,    -25,      W * 4, 50)
+    Matter.World.add(engine.world, [ground, wallL, wallR, ceiling])
 
-  let W = canvas.width, H = canvas.height
-  const ground  = makeWall(W / 2, H + 25,   W * 3, 50)
-  const wallL   = makeWall(-25,   H / 2,    50, H * 3)
-  const wallR   = makeWall(W + 25, H / 2,   50, H * 3)
-  const ceiling = makeWall(W / 2, -25,      W * 3, 50)
-  Matter.World.add(engine.world, [ground, wallL, wallR, ceiling])
+    // ---- Emojis ----
+    const emojiBodies = []
 
-  const emojiBodies = []
+    function spawnEmoji(emoji, sx, sy) {
+      const size = 38 + Math.random() * 20
+      const x = sx ?? (8 + Math.random() * (W - 16))
+      const y = sy ?? -(size + Math.random() * 60)
+      const body = Matter.Bodies.circle(x, y, size / 2, {
+        restitution: 0.7,
+        friction: 0.3,
+        frictionAir: 0.01,
+        density: 0.002
+      })
+      body._emoji = emoji
+      body._size  = size
+      Matter.World.add(engine.world, body)
+      emojiBodies.push(body)
+      if (emojiBodies.length > 80) Matter.World.remove(engine.world, emojiBodies.shift())
+      return body
+    }
 
-  function spawnEmoji(emoji, startX, startY) {
-    const size = 36 + Math.random() * 24
-    const x = startX ?? (Math.random() * (W - size) + size / 2)
-    const y = startY ?? -size
-    const body = Matter.Bodies.circle(x, y, size / 2, {
-      restitution: 0.75,
-      friction: 0.15,
-      frictionAir: 0.008,
-      density: 0.003
+    // Lluvia inicial escalonada
+    ITEMS.forEach((emoji, i) => setTimeout(() => spawnEmoji(emoji), i * 100))
+
+    // ---- Cartel de cumpleaños como cuerpo físico ----
+    const CARD_W = Math.min(340, W * 0.8)
+    const CARD_H = 140
+    const cardBody = Matter.Bodies.rectangle(W / 2, -(CARD_H / 2 + 10), CARD_W, CARD_H, {
+      restitution: 0.5,
+      friction: 0.4,
+      frictionAir: 0.015,
+      density: 0.005,
+      angle: (Math.random() - 0.5) * 0.3
     })
-    body._emoji = emoji
-    body._size  = size
-    Matter.World.add(engine.world, body)
-    emojiBodies.push(body)
-    if (emojiBodies.length > 90) {
-      Matter.World.remove(engine.world, emojiBodies.shift())
+    Matter.World.add(engine.world, cardBody)
+
+    // ---- Arrastre mouse/touch ----
+    // Todos los cuerpos dragables (emojis + cartel)
+    function allBodies() { return [...emojiBodies, cardBody] }
+
+    let dragging = null, dragOffX = 0, dragOffY = 0
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect()
+      const src  = e.touches ? e.touches[0] : e
+      return {
+        x: (src.clientX - rect.left) * (W / rect.width),
+        y: (src.clientY - rect.top)  * (H / rect.height)
+      }
     }
-    return body
-  }
 
-  // Lluvia inicial de emojis
-  for (let i = 0; i < 22; i++) {
-    setTimeout(() => spawnEmoji(ITEMS[i % ITEMS.length]), i * 130)
-  }
-
-  // --- Cartel de cumpleaños como cuerpo físico ---
-  const cardEl = document.getElementById('birthday-card')
-  const CARD_W = Math.min(380, W * 0.85)
-  const CARD_H = 160
-  const cardBody = Matter.Bodies.rectangle(W / 2, -200, CARD_W, CARD_H, {
-    restitution: 0.5,
-    friction: 0.3,
-    frictionAir: 0.02,
-    density: 0.01,
-    angle: (Math.random() - 0.5) * 0.4
-  })
-  Matter.World.add(engine.world, cardBody)
-
-  function updateCardEl() {
-    const p = cardBody.position
-    const a = cardBody.angle
-    cardEl.style.transform = `translate(${p.x - CARD_W / 2}px, ${p.y - CARD_H / 2}px) rotate(${a}rad)`
-    cardEl.style.width = CARD_W + 'px'
-  }
-
-  // --- Arrastre con mouse / touch ---
-  let dragging = null, dragOffX = 0, dragOffY = 0
-
-  function getPos(e) {
-    const rect = canvas.getBoundingClientRect()
-    const src  = e.touches ? e.touches[0] : e
-    return {
-      x: (src.clientX - rect.left) * (canvas.width  / rect.width),
-      y: (src.clientY - rect.top)  * (canvas.height / rect.height)
+    function bodyAtPos(px, py) {
+      // Check card first
+      const cp = cardBody.position
+      if (Math.abs(px - cp.x) < CARD_W / 2 && Math.abs(py - cp.y) < CARD_H / 2) return cardBody
+      return emojiBodies.find(b => {
+        const r = b._size / 2, dx = b.position.x - px, dy = b.position.y - py
+        return dx * dx + dy * dy <= r * r
+      }) || null
     }
-  }
 
-  function bodyAt(x, y) {
-    return emojiBodies.find(b => {
-      const r = b._size / 2, dx = b.position.x - x, dy = b.position.y - y
-      return dx * dx + dy * dy <= r * r
-    }) || null
-  }
-
-  canvas.addEventListener('mousedown', e => {
-    const p = getPos(e)
-    dragging = bodyAt(p.x, p.y)
-    if (dragging) {
-      dragOffX = p.x - dragging.position.x
-      dragOffY = p.y - dragging.position.y
-      Matter.Body.setStatic(dragging, true)
-      canvas.style.cursor = 'grabbing'
+    function startDrag(body, p) {
+      dragging = body
+      dragOffX = p.x - body.position.x
+      dragOffY = p.y - body.position.y
+      Matter.Body.setStatic(body, true)
     }
-  })
-  canvas.addEventListener('mousemove', e => {
-    const p = getPos(e)
-    if (dragging) {
-      Matter.Body.setPosition(dragging, { x: p.x - dragOffX, y: p.y - dragOffY })
-    } else {
-      canvas.style.cursor = bodyAt(p.x, p.y) ? 'grab' : 'default'
-    }
-  })
-  canvas.addEventListener('mouseup', e => {
-    if (dragging) {
-      const p = getPos(e)
+    function endDrag(p) {
+      if (!dragging) return
       Matter.Body.setStatic(dragging, false)
-      Matter.Body.setVelocity(dragging, { x: (p.x - dragging.position.x) * 0.15, y: (p.y - dragging.position.y) * 0.15 })
-      dragging = null; canvas.style.cursor = 'default'
+      if (p) Matter.Body.setVelocity(dragging, { x: (p.x - dragging.position.x) * 0.3, y: (p.y - dragging.position.y) * 0.3 })
+      dragging = null
     }
-  })
-  // Touch: only preventDefault when grabbing an emoji (allows scroll otherwise)
-  canvas.addEventListener('touchstart', e => {
-    const p = getPos(e)
-    const found = bodyAt(p.x, p.y)
-    if (found) {
-      e.preventDefault()
-      dragging = found
-      dragOffX = p.x - found.position.x
-      dragOffY = p.y - found.position.y
-      Matter.Body.setStatic(found, true)
-    }
-  }, { passive: false })
-  canvas.addEventListener('touchmove', e => {
-    if (dragging) {
-      e.preventDefault()
+
+    canvas.addEventListener('mousedown', e => {
+      const p = getPos(e); const b = bodyAtPos(p.x, p.y)
+      if (b) { startDrag(b, p); canvas.style.cursor = 'grabbing' }
+    })
+    canvas.addEventListener('mousemove', e => {
       const p = getPos(e)
-      Matter.Body.setPosition(dragging, { x: p.x - dragOffX, y: p.y - dragOffY })
-    }
-  }, { passive: false })
-  canvas.addEventListener('touchend', e => {
-    if (dragging) { Matter.Body.setStatic(dragging, false); dragging = null }
-  }, { passive: false })
+      if (dragging) { Matter.Body.setPosition(dragging, { x: p.x - dragOffX, y: p.y - dragOffY }) }
+      else { canvas.style.cursor = bodyAtPos(p.x, p.y) ? 'grab' : 'default' }
+    })
+    canvas.addEventListener('mouseup', e => { endDrag(getPos(e)); canvas.style.cursor = 'default' })
+    canvas.addEventListener('mouseleave', () => endDrag(null))
 
-  // --- Render loop propio ---
-  function drawBg() {
-    const g = ctx.createLinearGradient(0, 0, 0, H)
-    g.addColorStop(0, '#fff0fb')
-    g.addColorStop(1, '#ede9fe')
-    ctx.fillStyle = g
-    ctx.fillRect(0, 0, W, H)
-  }
+    canvas.addEventListener('touchstart', e => {
+      const p = getPos(e); const b = bodyAtPos(p.x, p.y)
+      if (b) { e.preventDefault(); startDrag(b, p) }
+    }, { passive: false })
+    canvas.addEventListener('touchmove', e => {
+      if (dragging) { e.preventDefault(); const p = getPos(e); Matter.Body.setPosition(dragging, { x: p.x - dragOffX, y: p.y - dragOffY }) }
+    }, { passive: false })
+    canvas.addEventListener('touchend', () => endDrag(null), { passive: true })
 
-  function drawEmojis() {
-    emojiBodies.forEach(b => {
+    // ---- Dibujo del cartel en canvas ----
+    function drawCard() {
+      const { x, y } = cardBody.position
+      const a = cardBody.angle
       ctx.save()
-      ctx.translate(b.position.x, b.position.y)
-      ctx.rotate(b.angle)
-      if (b === dragging) { ctx.shadowColor = '#ff6fb7'; ctx.shadowBlur = 20 }
-      ctx.font = `${b._size}px serif`
+      ctx.translate(x, y)
+      ctx.rotate(a)
+      // Sombra
+      ctx.shadowColor = 'rgba(214,58,138,0.25)'
+      ctx.shadowBlur  = 20
+      // Fondo glassmorphism simulado
+      const grd = ctx.createLinearGradient(-CARD_W/2, -CARD_H/2, CARD_W/2, CARD_H/2)
+      grd.addColorStop(0, 'rgba(255,255,255,0.92)')
+      grd.addColorStop(1, 'rgba(255,220,240,0.88)')
+      ctx.fillStyle = grd
+      ctx.beginPath()
+      ctx.roundRect(-CARD_W/2, -CARD_H/2, CARD_W, CARD_H, 24)
+      ctx.fill()
+      // Borde
+      ctx.shadowBlur = 0
+      ctx.strokeStyle = 'rgba(255,111,183,0.6)'
+      ctx.lineWidth = 2.5
+      ctx.stroke()
+      // Texto título
+      const fontSize = Math.min(28, CARD_W / 7)
+      ctx.font = `900 ${fontSize}px Fredoka One, cursive`
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-      ctx.fillText(b._emoji, 0, 0)
+      const grad = ctx.createLinearGradient(-60, 0, 60, 0)
+      grad.addColorStop(0, '#d63a8a')
+      grad.addColorStop(1, '#7c3aed')
+      ctx.fillStyle = grad
+      ctx.fillText('¡Feliz Cumpleaños Ainhara!', 0, -28)
+      // Subtítulo
+      ctx.font = `bold ${fontSize * 0.65}px Nunito, sans-serif`
+      ctx.fillStyle = '#7c3aed'
+      ctx.fillText('🎀 8 Añitos mágicos 🎀', 0, 20)
+      // Indicación
+      ctx.font = `${fontSize * 0.5}px Nunito, sans-serif`
+      ctx.fillStyle = '#b067d3'
+      ctx.fillText('¡Tocá todo para jugar! ✨', 0, 52)
       ctx.restore()
-    })
-  }
+    }
 
-  let lastTime = performance.now()
-  function loop(now) {
+    function drawBg() {
+      const g = ctx.createLinearGradient(0, 0, 0, H)
+      g.addColorStop(0, '#fff0fb')
+      g.addColorStop(1, '#ede9fe')
+      ctx.fillStyle = g
+      ctx.fillRect(0, 0, W, H)
+    }
+
+    function drawEmojis() {
+      emojiBodies.forEach(b => {
+        ctx.save()
+        ctx.translate(b.position.x, b.position.y)
+        ctx.rotate(b.angle)
+        if (b === dragging) { ctx.shadowColor = '#ff6fb7'; ctx.shadowBlur = 18 }
+        ctx.font = `${b._size}px serif`
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+        ctx.fillText(b._emoji, 0, 0)
+        ctx.restore()
+      })
+    }
+
+    let lastTime = performance.now()
+    function loop(now) {
+      requestAnimationFrame(loop)
+      const delta = Math.min(now - lastTime, 48)
+      lastTime = now
+      Matter.Engine.update(engine, delta)
+      ctx.clearRect(0, 0, W, H)
+      drawBg()
+      drawEmojis()
+      drawCard()
+    }
     requestAnimationFrame(loop)
-    const delta = now - lastTime; lastTime = now
-    Matter.Engine.update(engine, Math.min(delta, 50))
-    ctx.clearRect(0, 0, W, H)
-    drawBg()
-    drawEmojis()
-    updateCardEl()
-  }
-  requestAnimationFrame(loop)
 
-  // Resize
-  window.addEventListener('resize', () => {
-    resizeCanvas()
-    W = canvas.width; H = canvas.height
-    Matter.Body.setPosition(ground,  { x: W / 2,   y: H + 25 })
-    Matter.Body.setPosition(wallR,   { x: W + 25,  y: H / 2  })
-    Matter.Body.setPosition(ceiling, { x: W / 2,   y: -25    })
-    Matter.Body.setPosition(wallL,   { x: -25,      y: H / 2  })
-    // Re-center card constraint
-    Matter.Body.setVertices(cardBody, Matter.Bodies.rectangle(W / 2, cardBody.position.y, Math.min(380, W * 0.85), CARD_H).vertices)
-  })
-
-  // Controles
-  let gravityUp = false
-  document.getElementById('toggle-gravity').addEventListener('click', () => {
-    gravityUp = !gravityUp
-    engine.world.gravity.y = gravityUp ? -0.8 : 1
-    document.getElementById('toggle-gravity').textContent = gravityUp ? '⬇️ Gravedad Normal' : '⬆️ Anti-Gravedad'
-    emojiBodies.forEach(b => {
-      if (!b.isStatic) Matter.Body.setVelocity(b, { x: (Math.random() - 0.5) * 6, y: gravityUp ? -10 : 6 })
+    // ---- Controles ----
+    let gravUp = false
+    document.getElementById('toggle-gravity').addEventListener('click', () => {
+      gravUp = !gravUp
+      engine.world.gravity.y = gravUp ? -2.5 : 2.5
+      document.getElementById('toggle-gravity').textContent = gravUp ? '⬇️ Gravedad Normal' : '⬆️ Anti-Gravedad'
+      ;[...emojiBodies, cardBody].forEach(b => {
+        if (!b.isStatic) Matter.Body.setVelocity(b, { x: (Math.random()-0.5)*8, y: gravUp ? -12 : 8 })
+      })
     })
-  })
 
-  document.getElementById('rain-hearts').addEventListener('click', () => {
-    const set = ['💖','💗','💕','💞','💓','🌸','✨','🦋','💝','💘']
-    for (let i = 0; i < 10; i++) setTimeout(() => spawnEmoji(set[Math.floor(Math.random() * set.length)]), i * 70)
-  })
+    document.getElementById('rain-hearts').addEventListener('click', () => {
+      const set = ['💖','💗','💕','💞','💓','🌸','✨','🦋','💝','💘']
+      for (let i = 0; i < 10; i++) setTimeout(() => spawnEmoji(set[i % set.length]), i * 60)
+    })
 
-  document.getElementById('rain-gifts').addEventListener('click', () => {
-    const set = ['🎁','🎀','🧁','🍭','🎈','⭐','🌈','🏆','🦄','🍰']
-    for (let i = 0; i < 10; i++) setTimeout(() => spawnEmoji(set[Math.floor(Math.random() * set.length)]), i * 70)
-  })
+    document.getElementById('rain-gifts').addEventListener('click', () => {
+      const set = ['🎁','🎀','🧁','🍭','🎈','⭐','🌈','🏆','🦄','🍰']
+      for (let i = 0; i < 10; i++) setTimeout(() => spawnEmoji(set[i % set.length]), i * 60)
+    })
+  }
 }
 
 // ============================================================
