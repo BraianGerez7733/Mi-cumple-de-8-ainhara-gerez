@@ -14,8 +14,11 @@ const supabase = (SUPA_URL && SUPA_KEY) ? createClient(SUPA_URL, SUPA_KEY) : nul
 // ============================================================
 function initGravity() {
   const canvas = document.getElementById('gravity-canvas')
-  const W = canvas.offsetWidth
-  const H = canvas.offsetHeight
+  // Use actual pixel dimensions, fallback to window size
+  const W = canvas.offsetWidth || window.innerWidth
+  const H = canvas.offsetHeight || window.innerHeight
+  canvas.width = W
+  canvas.height = H
 
   const engine = Matter.Engine.create()
   const render = Matter.Render.create({
@@ -416,7 +419,12 @@ function initGame() {
   const jump = () => { if (state === 'playing') capy.jump() }
   canvas.addEventListener('click', jump)
   canvas.addEventListener('touchstart', e => { e.preventDefault(); jump() }, { passive: false })
-  document.addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); jump() } })
+  // Only intercept Space/Arrow when NOT typing in an input or textarea
+  document.addEventListener('keydown', e => {
+    const tag = document.activeElement?.tagName
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return
+    if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); jump() }
+  })
 
   // Initial draw
   draw()
@@ -567,7 +575,8 @@ function initRsvp() {
 
     try {
       if (supabase) {
-        const { error } = await supabase.from('rsvps').insert({ name, attendance, extra_message: extra_message || null })
+        // Table only has: id, name, attendance, created_at
+        const { error } = await supabase.from('rsvps').insert({ name, attendance })
         if (error) throw error
       }
       const msgs = { yes: '¡Genial! Te esperamos 🎉', no: 'Gracias por avisar 💕', maybe: '¡Ojalá puedas venir! 🤞' }
