@@ -106,7 +106,7 @@ export async function saveRsvp(payload) {
   localWrite(RSVP_KEY, next)
 
   if (hasSupabase) {
-    withTimeout(supabase.from('rsvps').upsert(record))
+    withTimeout(supabase.from('rsvps').insert(record))
       .then(({ error }) => {
         if (error) {
           throw error
@@ -157,7 +157,7 @@ export async function saveMessage(payload) {
   localWrite(MESSAGES_KEY, next)
 
   if (hasSupabase) {
-    withTimeout(supabase.from('messages').upsert(record))
+    withTimeout(supabase.from('messages').insert(record))
       .then(({ error }) => {
         if (error) {
           throw error

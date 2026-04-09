@@ -81,7 +81,7 @@ const handleSubmit = async () => {
             text="Nos encantaría saber si vas a venir. Por favor, dejá tu nombre y confirmá tu asistencia."
           />
 
-          <div class="mt-6 grid grid-cols-3 gap-3">
+          <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <BaseCard tone="blush">
               <p class="text-xs font-bold uppercase tracking-[0.18em] text-glam/70">Si van</p>
               <p class="mt-2 font-display text-3xl font-extrabold text-ink">{{ rsvp.summary.yes }}</p>
@@ -194,7 +194,7 @@ const handleSubmit = async () => {
             :key="entry.id"
             class="rounded-[1.5rem] border border-white/90 bg-white/90 p-4 shadow-card"
           >
-            <div class="flex items-start justify-between gap-3">
+            <div class="flex flex-col items-start justify-between gap-3 sm:flex-row">
               <div>
                 <h3 class="font-display text-xl font-bold text-ink">{{ entry.name }}</h3>
                 <p class="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-glam/65">

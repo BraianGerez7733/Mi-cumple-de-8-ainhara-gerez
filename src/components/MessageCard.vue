@@ -19,7 +19,7 @@ const formattedDate = computed(() => {
 
 <template>
   <article class="rounded-[1.5rem] border border-white/90 bg-white/90 p-4 shadow-card">
-    <div class="flex items-start justify-between gap-3">
+    <div class="flex flex-col items-start justify-between gap-3 sm:flex-row">
       <div>
         <h3 class="font-display text-xl font-bold text-ink">{{ message.name }}</h3>
         <p class="mt-1 text-sm font-semibold uppercase tracking-[0.18em] text-glam/70">

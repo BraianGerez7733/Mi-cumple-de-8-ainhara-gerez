@@ -45,7 +45,7 @@ import { eventData } from '../data/event'
               </BaseButton>
             </div>
 
-            <div class="mt-8 grid grid-cols-2 gap-3 sm:max-w-md">
+            <div class="mt-8 grid grid-cols-1 gap-3 sm:max-w-md sm:grid-cols-2">
               <div class="rounded-[1.5rem] bg-white/85 p-4 shadow-card ring-1 ring-white/70">
                 <p class="text-sm font-bold uppercase tracking-[0.2em] text-glam/70">Fecha</p>
                 <p class="mt-2 font-display text-2xl font-extrabold text-ink">

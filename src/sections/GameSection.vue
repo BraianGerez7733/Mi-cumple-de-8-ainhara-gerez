@@ -327,7 +327,7 @@ onBeforeUnmount(() => {
               El objetivo es simple: mueve a la capibara con tu dedo, junta regalos rosados y evita los charquitos marrones.
             </p>
 
-            <div class="mt-5 grid grid-cols-2 gap-3">
+            <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div class="rounded-2xl bg-blush/55 p-4">
                 <p class="text-xs font-bold uppercase tracking-[0.16em] text-glam/70">Puntaje actual</p>
                 <p class="mt-2 font-display text-3xl font-extrabold text-ink">{{ status.score }}</p>
