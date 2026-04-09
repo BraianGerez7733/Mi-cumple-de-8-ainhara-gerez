@@ -9,11 +9,18 @@ const props = defineProps({
 })
 
 const formattedDate = computed(() => {
-  return new Intl.DateTimeFormat('es-AR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(props.message.created_at))
+  if (!props.message.created_at) return ''
+  try {
+    const d = new Date(props.message.created_at)
+    if (isNaN(d.getTime())) return ''
+    return new Intl.DateTimeFormat('es-AR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(d)
+  } catch (e) {
+    return ''
+  }
 })
 </script>
 

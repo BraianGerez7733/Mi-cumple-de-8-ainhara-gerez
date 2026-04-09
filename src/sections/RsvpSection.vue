@@ -34,11 +34,19 @@ const attendanceTone = {
 
 const visibleEntries = computed(() => props.rsvp.entries.slice(0, 12))
 
-const formatDate = (value) =>
-  new Intl.DateTimeFormat('es-AR', {
-    day: '2-digit',
-    month: 'short',
-  }).format(new Date(value))
+const formatDate = (value) => {
+  if (!value) return ''
+  try {
+    const d = new Date(value)
+    if (isNaN(d.getTime())) return ''
+    return new Intl.DateTimeFormat('es-AR', {
+      day: '2-digit',
+      month: 'short',
+    }).format(d)
+  } catch (e) {
+    return ''
+  }
+}
 
 const reset = () => {
   form.name = ''
