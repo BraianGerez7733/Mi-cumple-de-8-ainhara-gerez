@@ -21,7 +21,7 @@ function initGravity() {
   canvas.width  = W
   canvas.height = H
 
-  const GRAV     = 0.22
+  const GRAV     = 0.28
   const FRICTION = 0.995
   const BOUNCE   = 0.52
   const ITEMS    = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫','🌟','🎊','🍬']
@@ -447,8 +447,12 @@ async function loadMessages(){
     const{data,error}=await supabase.from('messages').select('*').order('created_at',{ascending:false}).limit(50)
     if(error) throw error
     wall.innerHTML=''
-    if(!data||data.length===0){wall.innerHTML='<div class="wall-loading">¡Sé el primero en dejar un mensaje! 💌</div>';return}
-    data.forEach((msg,i)=>wall.appendChild(createMsgCard(msg,i)))
+    // Filtrar los mensajes de prueba que no se pueden borrar por seguridad de la base de datos (RLS)
+    const hiddenIds = ['1ea21128-a39a-4a22-ae2f-fe0c7a2725bd', 'b0cda649-b27b-4d25-8843-4631e60b1098', 'dc2cd935-e017-4677-a88b-50bec6ac0352', 'f5c4cbbb-9208-41c6-a724-df61e58eae2b']
+    const validData = (data || []).filter(m => !hiddenIds.includes(m.id))
+    
+    if(!validData||validData.length===0){wall.innerHTML='<div class="wall-loading">¡Sé el primero en dejar un mensaje! 💌</div>';return}
+    validData.forEach((msg,i)=>wall.appendChild(createMsgCard(msg,i)))
   }catch(err){console.error(err);wall.innerHTML='<div class="wall-loading">Error al cargar mensajes 😢</div>'}
 }
 
