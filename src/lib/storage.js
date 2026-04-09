@@ -1,9 +1,14 @@
+import { hasSupabase, supabase } from './supabase'
+
 const RSVP_KEY = 'ainhara-birthday-rsvp'
 const MESSAGES_KEY = 'ainhara-birthday-messages'
+const SCORES_KEY = 'ainhara-birthday-scores'
+const REMOTE_TIMEOUT_MS = 3500
 
 const memoryStore = {
   [RSVP_KEY]: [],
   [MESSAGES_KEY]: [],
+  [SCORES_KEY]: [],
 }
 
 const sortByNewest = (items) =>
@@ -17,6 +22,15 @@ const dedupeById = (items) => {
     }
   })
   return [...seen.values()]
+}
+
+const withTimeout = async (promise, timeoutMs = REMOTE_TIMEOUT_MS) => {
+  return await Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error('Supabase timeout')), timeoutMs)
+    }),
+  ])
 }
 
 const localRead = (key) => {
@@ -48,14 +62,16 @@ const localWrite = (key, items) => {
 export const getCachedRsvps = () => sortByNewest(localRead(RSVP_KEY))
 export const getCachedMessages = () => sortByNewest(localRead(MESSAGES_KEY))
 
-// --- RSVPs ---
 export async function listRsvps() {
   const localItems = sortByNewest(localRead(RSVP_KEY))
+  if (!hasSupabase) return localItems
+
   try {
-    const res = await fetch('/api/rsvps')
-    if (!res.ok) throw new Error('API Error')
-    const data = await res.json()
-    const merged = sortByNewest(dedupeById([...data, ...localItems]))
+    const { data, error } = await withTimeout(
+      supabase.from('rsvps').select('*').order('created_at', { ascending: false }),
+    )
+    if (error) throw error
+    const merged = sortByNewest(dedupeById([...(data ?? []), ...localItems]))
     localWrite(RSVP_KEY, merged)
     return merged
   } catch (error) {
@@ -70,16 +86,12 @@ export async function saveRsvp(payload) {
 
   const record = { id, created_at: new Date().toISOString(), ...payload }
 
-  try {
-    const res = await fetch('/api/rsvps', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(record)
-    })
-    if (!res.ok) throw new Error('API Error')
-  } catch (error) {
-    console.warn('RSVP remota sync falló', error)
-    throw new Error('Sync failed')
+  if (hasSupabase) {
+    const { error } = await withTimeout(supabase.from('rsvps').insert(record))
+    if (error) {
+      console.warn('RSVP remota sync falló', error)
+      throw new Error('Supabase sync failed')
+    }
   }
 
   const current = localRead(RSVP_KEY)
@@ -89,14 +101,16 @@ export async function saveRsvp(payload) {
   return record
 }
 
-// --- Mensajes ---
 export async function listMessages() {
   const localItems = sortByNewest(localRead(MESSAGES_KEY))
+  if (!hasSupabase) return localItems
+
   try {
-    const res = await fetch('/api/messages')
-    if (!res.ok) throw new Error('API Error')
-    const data = await res.json()
-    const merged = sortByNewest(dedupeById([...data, ...localItems]))
+    const { data, error } = await withTimeout(
+      supabase.from('messages').select('*').order('created_at', { ascending: false }),
+    )
+    if (error) throw error
+    const merged = sortByNewest(dedupeById([...(data ?? []), ...localItems]))
     localWrite(MESSAGES_KEY, merged)
     return merged
   } catch (error) {
@@ -111,16 +125,12 @@ export async function saveMessage(payload) {
 
   const record = { id, created_at: new Date().toISOString(), ...payload }
 
-  try {
-    const res = await fetch('/api/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(record)
-    })
-    if (!res.ok) throw new Error('API Error')
-  } catch (error) {
-    console.warn('Messages remote sync falló', error)
-    throw new Error('Sync failed')
+  if (hasSupabase) {
+    const { error } = await withTimeout(supabase.from('messages').insert(record))
+    if (error) {
+      console.warn('Messages remote sync falló', error)
+      throw new Error('Supabase sync failed')
+    }
   }
 
   const current = localRead(MESSAGES_KEY)
@@ -130,15 +140,22 @@ export async function saveMessage(payload) {
   return record
 }
 
-// --- Leaderboard ---
 export async function listTopScores() {
+  const localItems = [...localRead(SCORES_KEY)].sort((a, b) => b.puntuacion - a.puntuacion).slice(0, 5)
+  if (!hasSupabase) return localItems
+
   try {
-    const res = await fetch('/api/scores')
-    if (!res.ok) throw new Error('API Error')
-    return await res.json()
+    const { data, error } = await withTimeout(
+      supabase.from('juego_puntuaciones').select('*').order('puntuacion', { ascending: false }).limit(5)
+    )
+    if (error) throw error
+    const mergedData = dedupeById([...(data ?? []), ...localItems])
+    const bestFive = mergedData.sort((a, b) => b.puntuacion - a.puntuacion).slice(0, 5)
+    localWrite(SCORES_KEY, bestFive)
+    return bestFive
   } catch (error) {
     console.warn('Leaderboard fetch failed', error)
-    return []
+    return localItems
   }
 }
 
@@ -153,17 +170,18 @@ export async function saveScore(payload) {
     puntuacion: payload.puntuacion
   }
 
-  try {
-    const res = await fetch('/api/scores', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(record)
-    })
-    if (!res.ok) throw new Error('API Error')
-  } catch (error) {
-    console.warn('Score remote sync falló', error)
-    return null
+  if (hasSupabase) {
+    const { error } = await withTimeout(supabase.from('juego_puntuaciones').insert(record))
+    if (error) {
+      console.warn('Score remote sync falló', error)
+      return null
+    }
   }
+
+  const current = localRead(SCORES_KEY)
+  const merged = dedupeById([record, ...current])
+  const bestFive = merged.sort((a, b) => b.puntuacion - a.puntuacion).slice(0, 5)
+  localWrite(SCORES_KEY, bestFive)
 
   return record
 }
