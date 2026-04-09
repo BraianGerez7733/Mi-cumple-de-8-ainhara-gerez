@@ -10,127 +10,191 @@ const SUPA_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 const supabase = (SUPA_URL && SUPA_KEY) ? createClient(SUPA_URL, SUPA_KEY) : null
 
 // ============================================================
-// SECTION 1: ANTI-GRAVITY WORLD
+// SECTION 1: ANTI-GRAVITY WORLD (Headless Matter.js + propio render loop)
 // ============================================================
 function initGravity() {
   const canvas = document.getElementById('gravity-canvas')
-  // Use actual pixel dimensions, fallback to window size
-  const W = canvas.offsetWidth || window.innerWidth
-  const H = canvas.offsetHeight || window.innerHeight
-  canvas.width = W
-  canvas.height = H
+  const ctx = canvas.getContext('2d')
 
+  function resizeCanvas() {
+    canvas.width  = canvas.offsetWidth  || window.innerWidth
+    canvas.height = canvas.offsetHeight || window.innerHeight
+  }
+  resizeCanvas()
+
+  const ITEMS = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫']
+
+  // --- Motor de física headless (sin Matter.Render) ---
   const engine = Matter.Engine.create()
-  const render = Matter.Render.create({
-    canvas,
-    engine,
-    options: { width: W, height: H, wireframes: false, background: 'transparent' }
-  })
+  engine.world.gravity.y = 1
 
-  // Emoji objects with custom rendering
-  const ITEMS = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭']
-  const bodies = []
+  function makeWall(x, y, w, h) {
+    return Matter.Bodies.rectangle(x, y, w, h, { isStatic: true })
+  }
 
-  const wall = (x, y, w, h) => Matter.Bodies.rectangle(x, y, w, h, { isStatic: true, render: { visible: false } })
-  const ground = wall(W/2, H+30, W*2, 60)
-  const wallL = wall(-30, H/2, 60, H*2)
-  const wallR = wall(W+30, H/2, 60, H*2)
-  const ceiling = wall(W/2, -30, W*2, 60)
+  let W = canvas.width, H = canvas.height
+  const ground  = makeWall(W / 2, H + 25,   W * 3, 50)
+  const wallL   = makeWall(-25,   H / 2,    50, H * 3)
+  const wallR   = makeWall(W + 25, H / 2,   50, H * 3)
+  const ceiling = makeWall(W / 2, -25,      W * 3, 50)
   Matter.World.add(engine.world, [ground, wallL, wallR, ceiling])
 
-  // Create emoji physics bodies
-  function spawnEmoji(emoji, x, y) {
-    const size = 40 + Math.random() * 20
-    const body = Matter.Bodies.circle(
-      x ?? Math.random() * W,
-      y ?? -50,
-      size / 2,
-      {
-        restitution: 0.8,
-        friction: 0.2,
-        frictionAir: 0.01,
-        density: 0.002,
-        render: { visible: false }
-      }
-    )
+  const emojiBodies = []
+
+  function spawnEmoji(emoji, startX, startY) {
+    const size = 36 + Math.random() * 24
+    const x = startX ?? (Math.random() * (W - size) + size / 2)
+    const y = startY ?? -size
+    const body = Matter.Bodies.circle(x, y, size / 2, {
+      restitution: 0.75,
+      friction: 0.15,
+      frictionAir: 0.008,
+      density: 0.003
+    })
     body._emoji = emoji
-    body._size = size
+    body._size  = size
     Matter.World.add(engine.world, body)
-    bodies.push(body)
-    if (bodies.length > 80) {
-      Matter.World.remove(engine.world, bodies.shift())
+    emojiBodies.push(body)
+    if (emojiBodies.length > 90) {
+      Matter.World.remove(engine.world, emojiBodies.shift())
     }
     return body
   }
 
-  // Spawn initial items
-  for (let i = 0; i < 20; i++) {
-    setTimeout(() => spawnEmoji(ITEMS[i % ITEMS.length]), i * 150)
+  // Lluvia inicial
+  for (let i = 0; i < 25; i++) {
+    setTimeout(() => spawnEmoji(ITEMS[i % ITEMS.length]), i * 120)
   }
 
-  // Mouse interaction
-  const mouse = Matter.Mouse.create(canvas)
-  const mouseConstraint = Matter.MouseConstraint.create(engine, {
-    mouse,
-    constraint: { stiffness: 0.3, render: { visible: false } }
+  // --- Arrastre con mouse / touch ---
+  let dragging = null, dragOffX = 0, dragOffY = 0
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect()
+    const src  = e.touches ? e.touches[0] : e
+    return {
+      x: (src.clientX - rect.left) * (canvas.width  / rect.width),
+      y: (src.clientY - rect.top)  * (canvas.height / rect.height)
+    }
+  }
+
+  function bodyAt(x, y) {
+    return emojiBodies.find(b => {
+      const r = b._size / 2, dx = b.position.x - x, dy = b.position.y - y
+      return dx * dx + dy * dy <= r * r
+    }) || null
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    const p = getPos(e)
+    dragging = bodyAt(p.x, p.y)
+    if (dragging) {
+      dragOffX = p.x - dragging.position.x
+      dragOffY = p.y - dragging.position.y
+      Matter.Body.setStatic(dragging, true)
+      canvas.style.cursor = 'grabbing'
+    }
   })
-  Matter.World.add(engine.world, mouseConstraint)
-  render.mouse = mouse
-  mouse.element.removeEventListener('mousewheel', mouse.mousewheel)
-  mouse.element.removeEventListener('DOMMouseScroll', mouse.mousewheel)
+  canvas.addEventListener('mousemove', e => {
+    const p = getPos(e)
+    if (dragging) {
+      Matter.Body.setPosition(dragging, { x: p.x - dragOffX, y: p.y - dragOffY })
+    } else {
+      canvas.style.cursor = bodyAt(p.x, p.y) ? 'grab' : 'default'
+    }
+  })
+  canvas.addEventListener('mouseup', e => {
+    if (dragging) {
+      const p = getPos(e)
+      Matter.Body.setStatic(dragging, false)
+      Matter.Body.setVelocity(dragging, { x: (p.x - dragging.position.x) * 0.15, y: (p.y - dragging.position.y) * 0.15 })
+      dragging = null; canvas.style.cursor = 'default'
+    }
+  })
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault()
+    const p = getPos(e)
+    dragging = bodyAt(p.x, p.y)
+    if (dragging) {
+      dragOffX = p.x - dragging.position.x
+      dragOffY = p.y - dragging.position.y
+      Matter.Body.setStatic(dragging, true)
+    }
+  }, { passive: false })
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault()
+    if (dragging) {
+      const p = getPos(e)
+      Matter.Body.setPosition(dragging, { x: p.x - dragOffX, y: p.y - dragOffY })
+    }
+  }, { passive: false })
+  canvas.addEventListener('touchend', e => {
+    e.preventDefault()
+    if (dragging) { Matter.Body.setStatic(dragging, false); dragging = null }
+  }, { passive: false })
 
-  // HTML canvas overlay for emoji rendering
-  const ctx = canvas.getContext('2d')
+  // --- Render loop propio ---
+  function drawBg() {
+    const g = ctx.createLinearGradient(0, 0, 0, H)
+    g.addColorStop(0, '#fff0fb')
+    g.addColorStop(1, '#ede9fe')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, W, H)
+  }
 
-  Matter.Events.on(render, 'afterRender', () => {
-    bodies.forEach(b => {
+  function drawEmojis() {
+    emojiBodies.forEach(b => {
       ctx.save()
       ctx.translate(b.position.x, b.position.y)
       ctx.rotate(b.angle)
+      if (b === dragging) { ctx.shadowColor = '#ff6fb7'; ctx.shadowBlur = 20 }
       ctx.font = `${b._size}px serif`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
       ctx.fillText(b._emoji, 0, 0)
       ctx.restore()
     })
+  }
+
+  let lastTime = performance.now()
+  function loop(now) {
+    requestAnimationFrame(loop)
+    const delta = now - lastTime; lastTime = now
+    Matter.Engine.update(engine, Math.min(delta, 50))
+    ctx.clearRect(0, 0, W, H)
+    drawBg()
+    drawEmojis()
+  }
+  requestAnimationFrame(loop)
+
+  // Resize
+  window.addEventListener('resize', () => {
+    resizeCanvas()
+    W = canvas.width; H = canvas.height
+    Matter.Body.setPosition(ground,  { x: W / 2,   y: H + 25 })
+    Matter.Body.setPosition(wallR,   { x: W + 25,  y: H / 2  })
+    Matter.Body.setPosition(ceiling, { x: W / 2,   y: -25    })
+    Matter.Body.setPosition(wallL,   { x: -25,      y: H / 2  })
   })
 
-  Matter.Render.run(render)
-  const runner = Matter.Runner.create()
-  Matter.Runner.run(runner, engine)
-
-  // Resize handling
-  function resize() {
-    const nW = canvas.offsetWidth
-    const nH = canvas.offsetHeight
-    render.canvas.width = nW; render.canvas.height = nH
-    render.options.width = nW; render.options.height = nH
-    Matter.Body.setPosition(ground, { x: nW/2, y: nH+30 })
-    Matter.Body.setPosition(wallR, { x: nW+30, y: nH/2 })
-  }
-  window.addEventListener('resize', resize)
-
-  // Controls
+  // Controles
   let gravityUp = false
   document.getElementById('toggle-gravity').addEventListener('click', () => {
     gravityUp = !gravityUp
     engine.world.gravity.y = gravityUp ? -0.8 : 1
     document.getElementById('toggle-gravity').textContent = gravityUp ? '⬇️ Gravedad Normal' : '⬆️ Anti-Gravedad'
-    bodies.forEach(b => Matter.Body.setVelocity(b, { x: (Math.random()-0.5)*5, y: gravityUp ? -8 : 5 }))
+    emojiBodies.forEach(b => {
+      if (!b.isStatic) Matter.Body.setVelocity(b, { x: (Math.random() - 0.5) * 6, y: gravityUp ? -10 : 6 })
+    })
   })
 
   document.getElementById('rain-hearts').addEventListener('click', () => {
-    const hearts = ['💖','💗','💕','💞','💓','🌸','✨','🦋']
-    for (let i = 0; i < 8; i++) {
-      setTimeout(() => spawnEmoji(hearts[Math.floor(Math.random()*hearts.length)]), i * 80)
-    }
+    const set = ['💖','💗','💕','💞','💓','🌸','✨','🦋','💝','💘']
+    for (let i = 0; i < 10; i++) setTimeout(() => spawnEmoji(set[Math.floor(Math.random() * set.length)]), i * 70)
   })
 
   document.getElementById('rain-gifts').addEventListener('click', () => {
-    const gifts = ['🎁','🎀','🧁','🍭','🎈','⭐','🌈','🏆']
-    for (let i = 0; i < 8; i++) {
-      setTimeout(() => spawnEmoji(gifts[Math.floor(Math.random()*gifts.length)]), i * 80)
-    }
+    const set = ['🎁','🎀','🧁','🍭','🎈','⭐','🌈','🏆','🦄','🍰']
+    for (let i = 0; i < 10; i++) setTimeout(() => spawnEmoji(set[Math.floor(Math.random() * set.length)]), i * 70)
   })
 }
 
