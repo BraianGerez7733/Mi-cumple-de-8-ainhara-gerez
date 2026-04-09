@@ -59,6 +59,12 @@ const localWrite = (key, items) => {
   }
 }
 
+const generateFallbackId = () => {
+  return (typeof crypto !== 'undefined' && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : (Math.random().toString(36).substring(2) + Date.now().toString(36))
+}
+
 export const getCachedRsvps = () => sortByNewest(localRead(RSVP_KEY))
 export const getCachedMessages = () => sortByNewest(localRead(MESSAGES_KEY))
 
@@ -75,23 +81,27 @@ export async function listRsvps() {
     localWrite(RSVP_KEY, merged)
     return merged
   } catch (error) {
-    console.warn('RSVP fallback to localStorage', error)
+    console.warn('RSVP fetch falló', error)
     return localItems
   }
 }
 
 export async function saveRsvp(payload) {
-  const fallbackId = Math.random().toString(36).substring(2) + Date.now().toString(36)
-  const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : fallbackId
-
-  const record = { id, created_at: new Date().toISOString(), ...payload }
+  let record = { created_at: new Date().toISOString(), ...payload }
 
   if (hasSupabase) {
-    const { error } = await withTimeout(supabase.from('rsvps').insert(record))
-    if (error) {
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from('rsvps').insert(record).select().single()
+      )
+      if (error) throw error
+      if (data) record = data 
+    } catch (error) {
       console.warn('RSVP remota sync falló', error)
       throw new Error('Supabase sync failed')
     }
+  } else {
+    record.id = generateFallbackId()
   }
 
   const current = localRead(RSVP_KEY)
@@ -114,23 +124,27 @@ export async function listMessages() {
     localWrite(MESSAGES_KEY, merged)
     return merged
   } catch (error) {
-    console.warn('Messages fallback to localStorage', error)
+    console.warn('Messages fetch falló', error)
     return localItems
   }
 }
 
 export async function saveMessage(payload) {
-  const fallbackId = Math.random().toString(36).substring(2) + Date.now().toString(36)
-  const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : fallbackId
-
-  const record = { id, created_at: new Date().toISOString(), ...payload }
+  let record = { created_at: new Date().toISOString(), ...payload }
 
   if (hasSupabase) {
-    const { error } = await withTimeout(supabase.from('messages').insert(record))
-    if (error) {
-      console.warn('Messages remote sync falló', error)
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from('messages').insert(record).select().single()
+      )
+      if (error) throw error
+      if (data) record = data
+    } catch (error) {
+      console.warn('Messages remota sync falló', error)
       throw new Error('Supabase sync failed')
     }
+  } else {
+    record.id = generateFallbackId()
   }
 
   const current = localRead(MESSAGES_KEY)
@@ -160,22 +174,25 @@ export async function listTopScores() {
 }
 
 export async function saveScore(payload) {
-  const fallbackId = Math.random().toString(36).substring(2) + Date.now().toString(36)
-  const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : fallbackId
-
-  const record = {
-    id,
+  let record = {
     creado_en: new Date().toISOString(),
     nombre_jugador: payload.nombre_jugador,
     puntuacion: payload.puntuacion
   }
 
   if (hasSupabase) {
-    const { error } = await withTimeout(supabase.from('juego_puntuaciones').insert(record))
-    if (error) {
+    try {
+      const { data, error } = await withTimeout(
+        supabase.from('juego_puntuaciones').insert(record).select().single()
+      )
+      if (error) throw error
+      if (data) record = data
+    } catch (error) {
       console.warn('Score remote sync falló', error)
       return null
     }
+  } else {
+    record.id = generateFallbackId()
   }
 
   const current = localRead(SCORES_KEY)
