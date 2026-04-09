@@ -21,9 +21,9 @@ function initGravity() {
   canvas.width  = W
   canvas.height = H
 
-  const GRAV     = 0.06
-  const FRICTION = 0.998
-  const BOUNCE   = 0.46
+  const GRAV     = 0.16
+  const FRICTION = 0.995
+  const BOUNCE   = 0.52
   const ITEMS    = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫','🌟','🎊','🍬']
 
   let particles = []
