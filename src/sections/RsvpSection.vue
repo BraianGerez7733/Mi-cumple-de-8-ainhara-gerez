@@ -32,7 +32,9 @@ const attendanceTone = {
   no: 'bg-[#ffe6ef] text-[#a03868]',
 }
 
-const visibleEntries = computed(() => props.rsvp.entries.slice(0, 12))
+import { unref } from 'vue'
+
+const visibleEntries = computed(() => unref(props.rsvp.entries).slice(0, 12))
 
 const formatDate = (value) => {
   if (!value) return ''
