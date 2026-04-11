@@ -486,22 +486,20 @@ async function loadRsvp(){
   try{
     const{data,error}=await supabase.from('rsvps').select('*').order('created_at',{ascending:false}).limit(50)
     if(error) throw error
-    let yes=0,no=0,maybe=0
+    let yes=0,no=0
     list.innerHTML=''
     ;(data||[]).forEach(r=>{
       if(r.attendance==='yes') yes++
       else if(r.attendance==='no') no++
-      else maybe++
       const card=document.createElement('div')
       card.className=`rsvp-card ${r.attendance}`
-      const labels={yes:'🎉 Va',no:'😢 No puede',maybe:'🤔 Tal vez'}
+      const labels={yes:'🎉 Va',no:'😢 No puede'}
       card.innerHTML=`<span class="rsvp-badge ${r.attendance}">${labels[r.attendance]||r.attendance}</span><h4>${escapeHtml(r.name)}</h4>`
       list.appendChild(card)
     })
     if(!data||data.length===0) list.innerHTML='<div class="wall-loading">¡Sé el primero en confirmar! 🎈</div>'
     document.getElementById('count-yes').textContent=yes
     document.getElementById('count-no').textContent=no
-    document.getElementById('count-maybe').textContent=maybe
   }catch(err){list.innerHTML='<div class="wall-loading">Error al cargar 😢</div>';console.error(err)}
 }
 
@@ -518,7 +516,7 @@ function initRsvp(){
     btn.disabled=true;btn.textContent='Guardando... ✨'
     try{
       if(supabase){const{error}=await supabase.from('rsvps').insert({name,attendance});if(error)throw error}
-      const msgs={yes:'¡Genial! Te esperamos 🎉',no:'Gracias por avisar 💕',maybe:'¡Ojalá puedas venir! 🤞'}
+      const msgs={yes:'¡Genial! Te esperamos 🎉',no:'Gracias por avisar 💕'}
       fb.textContent=msgs[attendance]||'Respuesta guardada 💖';fb.classList.add('success')
       document.getElementById('rsvp-name').value=''
       document.getElementById('rsvp-msg').value=''
