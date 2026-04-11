@@ -30,15 +30,16 @@ function initGravity() {
   let gravDir   = 1
 
   function makeParticle(emoji, x, y) {
+    const sf = Math.min(1.8, Math.max(1, H / 800))
     return {
       emoji,
       size : 36 + Math.random() * 22,
       x    : x  ?? (30 + Math.random() * (W - 60)),
       y    : y  ?? -(30 + Math.random() * 80),
-      vx   : (Math.random() - 0.5) * 3,
-      vy   : Math.random() * 2,
+      vx   : (Math.random() - 0.5) * 3 * sf,
+      vy   : Math.random() * 2 * sf,
       angle: Math.random() * Math.PI * 2,
-      av   : (Math.random() - 0.5) * 0.08
+      av   : (Math.random() - 0.5) * 0.08 * sf
     }
   }
 
@@ -61,11 +62,12 @@ function initGravity() {
   const ANCHOR_DELAY = 8000   // ms hasta que el cartel se centra
   const cardStartTime = performance.now()
 
-  function updateParticle(p) {
-    p.vy += GRAV * gravDir
-    p.vx *= FRICTION; p.vy *= FRICTION
-    p.x  += p.vx;     p.y  += p.vy
-    p.angle += p.av
+  function updateParticle(p, dt) {
+    p.vy += GRAV * gravDir * dt
+    const f = Math.pow(FRICTION, dt)
+    p.vx *= f; p.vy *= f
+    p.x  += p.vx * dt;     p.y  += p.vy * dt
+    p.angle += p.av * dt
     const r = p.size / 2
     if (gravDir ===  1 && p.y + r > H) { p.y = H - r; p.vy *= -BOUNCE; p.av *= 0.8 }
     if (gravDir === -1 && p.y - r < 0) { p.y = r;     p.vy *= -BOUNCE; p.av *= 0.8 }
@@ -75,7 +77,7 @@ function initGravity() {
     if (gravDir === -1 && p.y + r < -100)    p.y = H + 50
   }
 
-  function updateCard() {
+  function updateCard(dt) {
     if (card === dragging) return  // no update if being dragged
 
     const elapsed = performance.now() - cardStartTime
@@ -89,23 +91,24 @@ function initGravity() {
       const tx = W / 2
       const ty = H / 2
       const k = 0.028           // fuerza del resorte
-      const damp = 0.88         // amortiguación
-      card.vx += (tx - card.x) * k
-      card.vy += (ty - card.y) * k
+      const damp = Math.pow(0.88, dt)         // amortiguación
+      card.vx += (tx - card.x) * k * dt
+      card.vy += (ty - card.y) * k * dt
       card.vx *= damp
       card.vy *= damp
-      card.x  += card.vx
-      card.y  += card.vy
+      card.x  += card.vx * dt
+      card.y  += card.vy * dt
       // Enderezar ángulo hacia 0
-      card.av += (0 - card.angle) * 0.06
-      card.av *= 0.80
-      card.angle += card.av
+      card.av += (0 - card.angle) * 0.06 * dt
+      card.av *= Math.pow(0.80, dt)
+      card.angle += card.av * dt
     } else {
       // Física normal
-      card.vy += GRAV * gravDir * 0.35
-      card.vx *= FRICTION; card.vy *= FRICTION
-      card.x  += card.vx;  card.y  += card.vy
-      card.angle += card.av; card.av *= 0.97
+      card.vy += GRAV * gravDir * 0.35 * dt
+      const f = Math.pow(FRICTION, dt)
+      card.vx *= f; card.vy *= f
+      card.x  += card.vx * dt;  card.y  += card.vy * dt
+      card.angle += card.av * dt; card.av *= Math.pow(0.97, dt)
       const hW = CARD_W / 2, hH = CARD_H / 2
       if (gravDir ===  1 && card.y + hH > H)   { card.y = H - hH; card.vy *= -BOUNCE * 0.7; card.av *= 0.6 }
       if (gravDir === -1 && card.y - hH < 0)   { card.y = hH;     card.vy *= -BOUNCE * 0.7; card.av *= 0.6 }
@@ -203,10 +206,20 @@ function initGravity() {
   canvas.addEventListener('touchmove',  e => { if(dragging){e.preventDefault();moveDrag(getPos(e))} }, {passive:false})
   canvas.addEventListener('touchend',   () => endDrag(), {passive:true})
 
-  function loop() {
+  let lastTime = performance.now()
+  function loop(now) {
     requestAnimationFrame(loop)
-    particles.forEach(p => { if(p !== dragging) updateParticle(p) })
-    if (card !== dragging) updateCard()
+    let dt = (now - lastTime) / 16.666
+    if (dt > 3 || dt < 0) dt = 1
+    lastTime = now
+
+    // Escalamos ligeramente la velocidad general en pantallas más altas (PCs)
+    const scaleFactor = Math.min(1.8, Math.max(1, H / 800))
+    const dtScale = dt * scaleFactor
+
+    particles.forEach(p => { if(p !== dragging) updateParticle(p, dtScale) })
+    if (card !== dragging) updateCard(dtScale)
+    
     ctx.clearRect(0, 0, W, H)
     drawBg(); drawParticles(); drawCard()
   }
@@ -225,8 +238,9 @@ function initGravity() {
   document.getElementById('toggle-gravity').addEventListener('click', () => {
     gravUp = !gravUp; gravDir = gravUp ? -1 : 1
     document.getElementById('toggle-gravity').textContent = gravUp ? '⬇️ Gravedad Normal' : '⬆️ Anti-Gravedad'
-    particles.forEach(p => { p.vy = gravUp ? -3 : 2; p.vx = (Math.random()-0.5)*4 })
-    card.vy = gravUp ? -3 : 2
+    const sf = Math.min(1.8, Math.max(1, H / 800))
+    particles.forEach(p => { p.vy = (gravUp ? -3 : 2) * sf; p.vx = (Math.random()-0.5) * 4 * sf })
+    card.vy = (gravUp ? -3 : 2) * sf
   })
   document.getElementById('rain-hearts').addEventListener('click', () => {
     const s = ['💖','💗','💕','💞','💓','🌸','✨','🦋','💝','💘']
