@@ -551,6 +551,52 @@ async function loadRanking(){
 }
 
 // ============================================================
+// SECTION 6: CAROUSEL
+// ============================================================
+function initCarousel() {
+  let slideIndex = 1;
+  const slides = document.getElementsByClassName("carousel-slide");
+  const dots = document.getElementsByClassName("dot");
+  
+  if (!slides.length) return;
+
+  function showSlides(n) {
+    if (n > slides.length) slideIndex = 1;
+    if (n < 1) slideIndex = slides.length;
+    for (let i = 0; i < slides.length; i++) {
+      slides[i].style.display = "none";
+    }
+    for (let i = 0; i < dots.length; i++) {
+      dots[i].className = dots[i].className.replace(" active", "");
+    }
+    slides[slideIndex - 1].style.display = "block";
+    if (dots.length > 0) dots[slideIndex - 1].className += " active";
+  }
+
+  showSlides(slideIndex);
+
+  document.getElementById('c-prev')?.addEventListener('click', () => {
+    showSlides(slideIndex -= 1);
+  });
+  
+  document.getElementById('c-next')?.addEventListener('click', () => {
+    showSlides(slideIndex += 1);
+  });
+
+  Array.from(dots).forEach(dot => {
+    dot.addEventListener('click', (e) => {
+      const idx = parseInt(e.target.getAttribute('data-slide'));
+      if (idx) showSlides(slideIndex = idx);
+    });
+  });
+
+  // Autoplay
+  setInterval(() => {
+    showSlides(slideIndex += 1);
+  }, 4000);
+}
+
+// ============================================================
 // UTILITY
 // ============================================================
 function escapeHtml(str){
@@ -566,4 +612,5 @@ document.addEventListener('DOMContentLoaded',()=>{
   initMessages()
   initRsvp()
   loadRanking()
+  initCarousel()
 })

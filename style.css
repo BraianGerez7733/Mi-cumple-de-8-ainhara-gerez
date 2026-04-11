@@ -247,11 +247,88 @@ body {
 .rank-card:nth-child(2) { border-color: #9ca3af; background: linear-gradient(135deg, #f9fafb, #f3f4f6); }
 .rank-card:nth-child(3) { border-color: #d97706; background: linear-gradient(135deg, #fffbeb, #fde8c8); }
 
+/* ===== CAROUSEL / GALERÍA ===== */
+.carousel-container {
+  max-width: 800px;
+  position: relative;
+  margin: 0 auto;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-strong);
+  border: 4px solid var(--pink-light);
+  background: white;
+}
+.carousel-slide {
+  display: none;
+  width: 100%;
+}
+.carousel-slide img {
+  vertical-align: middle;
+  width: 100%;
+  height: 450px;
+  object-fit: cover;
+  border-radius: calc(var(--radius) - 4px);
+}
+@media (max-width: 600px) {
+  .carousel-slide img { height: 300px; }
+}
+.carousel-prev, .carousel-next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  padding: 16px;
+  margin-top: -24px;
+  color: white;
+  font-weight: bold;
+  font-size: 24px;
+  transition: 0.3s ease;
+  border-radius: 0 1rem 1rem 0;
+  user-select: none;
+  background-color: rgba(214, 58, 138, 0.4);
+  backdrop-filter: blur(4px);
+}
+.carousel-next {
+  right: 0;
+  border-radius: 1rem 0 0 1rem;
+}
+.carousel-prev:hover, .carousel-next:hover {
+  background-color: rgba(214, 58, 138, 0.9);
+  transform: scale(1.05);
+}
+.carousel-dots {
+  text-align: center;
+  padding: 1rem 0;
+}
+.dot {
+  cursor: pointer;
+  height: 14px;
+  width: 14px;
+  margin: 0 6px;
+  background-color: var(--pink-light);
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.3s ease, transform 0.2s;
+}
+.dot.active, .dot:hover {
+  background-color: var(--pink-dark);
+  transform: scale(1.2);
+}
+.fade {
+  animation-name: fadeCarousel;
+  animation-duration: 0.8s;
+}
+
 /* ===== FOOTER ===== */
 .site-footer {
   background: linear-gradient(135deg, var(--pink-dark), var(--purple-dark));
   color: white; text-align: center; padding: 2rem;
   font-weight: 700; font-size: 1rem;
+}
+
+@keyframes fadeCarousel {
+  from { opacity: 0.4; } 
+  to { opacity: 1; }
 }
 
 /* ===== ANIMATIONS ===== */
