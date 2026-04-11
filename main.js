@@ -21,7 +21,7 @@ function initGravity() {
   canvas.width  = W
   canvas.height = H
 
-  const GRAV     = 0.28
+  const GRAV     = 0.14
   const FRICTION = 0.995
   const BOUNCE   = 0.52
   const ITEMS    = ['🎀','🎁','🌈','⭐','🦋','🌸','💖','🧁','🎈','🐾','✨','🍭','🦄','🍰','🌺','💫','🌟','🎊','🍬']
@@ -225,8 +225,8 @@ function initGravity() {
   document.getElementById('toggle-gravity').addEventListener('click', () => {
     gravUp = !gravUp; gravDir = gravUp ? -1 : 1
     document.getElementById('toggle-gravity').textContent = gravUp ? '⬇️ Gravedad Normal' : '⬆️ Anti-Gravedad'
-    particles.forEach(p => { p.vy = gravUp ? -8 : 6; p.vx = (Math.random()-0.5)*6 })
-    card.vy = gravUp ? -8 : 6
+    particles.forEach(p => { p.vy = gravUp ? -3 : 2; p.vx = (Math.random()-0.5)*4 })
+    card.vy = gravUp ? -3 : 2
   })
   document.getElementById('rain-hearts').addEventListener('click', () => {
     const s = ['💖','💗','💕','💞','💓','🌸','✨','🦋','💝','💘']
