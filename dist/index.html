@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-IT3PFEl9.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-H_FAYl9Y.css">
+  <script type="module" crossorigin src="/assets/index-DvXNlLzN.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BfLgkxff.css">
 </head>
 <body>
   <!-- NAV sticky -->
@@ -127,11 +127,6 @@
               <span class="choice-emoji">😢</span>
               <span>No puedo</span>
             </label>
-            <label class="choice-card" id="choice-maybe">
-              <input type="radio" name="attendance" value="maybe"/>
-              <span class="choice-emoji">🤔</span>
-              <span>Tal vez</span>
-            </label>
           </div>
         </div>
         <div class="form-field">
@@ -145,7 +140,6 @@
         <div class="rsvp-counter">
           <div class="counter-pill yes"><span id="count-yes">0</span> Van 🎉</div>
           <div class="counter-pill no"><span id="count-no">0</span> No pueden 😢</div>
-          <div class="counter-pill maybe"><span id="count-maybe">0</span> Tal vez 🤔</div>
         </div>
         <div class="rsvp-list" id="rsvp-list">
           <div class="wall-loading">Cargando confirmaciones... ✨</div>
@@ -162,6 +156,34 @@
     </div>
     <div class="ranking-board" id="ranking-board">
       <div class="wall-loading">Cargando ranking... ✨</div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 6: CAROUSEL / GALERÍA -->
+  <section id="gallery" class="section-wrap">
+    <div class="section-header">
+      <h2 class="section-title">📸 Galería Mágica</h2>
+      <p class="section-sub">¡Momentos divertidos con Ainhara y los capibaras! 💖</p>
+    </div>
+    <div class="carousel-container">
+      <div class="carousel-slide fade">
+        <img src="/assets/capybara1-DGfX3rDh.png" alt="Capibara de cumpleaños">
+      </div>
+      <div class="carousel-slide fade">
+        <img src="/assets/capybara2-C14tViQI.png" alt="Torta majestuosa">
+      </div>
+      <div class="carousel-slide fade">
+        <img src="/assets/capybara3-CVU-XAZL.png" alt="Regalos especiales">
+      </div>
+      
+      <!-- Controles -->
+      <a class="carousel-prev" id="c-prev">&#10094;</a>
+      <a class="carousel-next" id="c-next">&#10095;</a>
+    </div>
+    <div class="carousel-dots">
+      <span class="dot" data-slide="1"></span>
+      <span class="dot" data-slide="2"></span>
+      <span class="dot" data-slide="3"></span>
     </div>
   </section>
 
