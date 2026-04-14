@@ -1,4 +1,4 @@
-import './style.css'
+import './piano.css'
 
 const frequencies = {
   C4: 261.63,

@@ -1,0 +1,454 @@
+:root {
+  --bg-cream: #fff9ef;
+  --bg-pink: #ffe0f1;
+  --bg-lilac: #efe4ff;
+  --bg-blue: #dff4ff;
+  --ink: #40305f;
+  --ink-soft: #6d5a90;
+  --white: #ffffff;
+  --coral: #ff7b7b;
+  --mango: #ffaf45;
+  --lemon: #ffe66d;
+  --mint: #78e8b4;
+  --sky: #6ecbff;
+  --blueberry: #6f7cff;
+  --grape: #b773ff;
+  --bubblegum: #ff89ca;
+  --shadow: 0 24px 60px rgba(127, 93, 180, 0.18);
+  --shadow-soft: 0 14px 30px rgba(127, 93, 180, 0.12);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body.piano-page {
+  color: var(--ink);
+  font-family: 'Fredoka', sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 28%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.75), transparent 22%),
+    linear-gradient(160deg, var(--bg-cream), var(--bg-pink) 35%, var(--bg-blue) 68%, var(--bg-lilac));
+  overflow-x: hidden;
+}
+
+.piano-shell {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.2rem 0 2.5rem;
+}
+
+.piano-topbar,
+.piano-hero,
+.piano-playground {
+  position: relative;
+  z-index: 2;
+}
+
+.piano-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.35rem 0 1rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.5rem;
+  padding: 0.9rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff5d9e, #ff9d2f);
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 14px 28px rgba(255, 93, 158, 0.3);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.back-link:hover,
+.mode-button:hover,
+.piano-key:hover {
+  transform: translateY(-2px);
+}
+
+.topbar-pill {
+  padding: 0.8rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: var(--shadow-soft);
+  color: var(--ink-soft);
+  font-size: 0.98rem;
+}
+
+.piano-hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.2rem;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.piano-copy,
+.piano-frame,
+.fun-card,
+.control-panel {
+  border-radius: 32px;
+}
+
+.piano-copy {
+  padding: 1.6rem 1.7rem;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(12px);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff, #ffe7fa);
+  color: #ef4e97;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: var(--shadow-soft);
+}
+
+.piano-copy h1 {
+  margin: 0;
+  font-family: 'Baloo 2', cursive;
+  font-size: clamp(2.6rem, 5vw, 5rem);
+  line-height: 0.95;
+}
+
+.piano-copy p {
+  margin: 1.2rem 0 0;
+  color: var(--ink-soft);
+  font-size: 1.12rem;
+  line-height: 1.6;
+  max-width: 36rem;
+}
+
+.control-panel {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: var(--shadow-soft);
+}
+
+.mode-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.9rem 1rem;
+  min-width: 110px;
+  color: var(--ink);
+  background: linear-gradient(135deg, #ffffff, #ffeaf8);
+  box-shadow: inset 0 0 0 2px rgba(255, 135, 197, 0.22);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.mode-button.active {
+  background: linear-gradient(135deg, #ff7cbf, #ffb347);
+  color: var(--white);
+  box-shadow: 0 16px 28px rgba(255, 120, 191, 0.25);
+}
+
+.piano-playground {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 1.2rem;
+  align-items: start;
+}
+
+.piano-frame {
+  position: relative;
+  overflow: hidden;
+  padding: 1.3rem;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.85), transparent 28%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.56));
+  box-shadow: var(--shadow);
+}
+
+.light-wall {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.piano-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.piano-label {
+  margin: 0 0 0.4rem;
+  color: #f15a9f;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.piano-header h2 {
+  margin: 0;
+  font-family: 'Baloo 2', cursive;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+.piano-instructions {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--ink-soft);
+  font-size: 0.94rem;
+  text-align: right;
+}
+
+.piano-board {
+  position: relative;
+  padding: 1.4rem 1rem 1rem;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #ffeff8, #fffef9);
+  box-shadow: inset 0 0 0 2px rgba(255, 170, 210, 0.5);
+}
+
+.white-key-row {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(70px, 1fr));
+  gap: 0.7rem;
+}
+
+.black-key-row {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  top: 1.4rem;
+  height: 0;
+  z-index: 2;
+}
+
+.piano-key {
+  user-select: none;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+}
+
+.piano-key.white {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 290px;
+  padding: 1.1rem 0.4rem 0.9rem;
+  border: 0;
+  border-radius: 24px;
+  color: #3f305f;
+  font-size: 1.45rem;
+  font-weight: 700;
+  box-shadow:
+    inset 0 -16px 0 rgba(0, 0, 0, 0.08),
+    0 16px 24px rgba(111, 124, 255, 0.12);
+}
+
+.piano-key.white small {
+  font-size: 0.98rem;
+  opacity: 0.7;
+}
+
+.piano-key.black {
+  position: absolute;
+  top: 0;
+  width: calc((100% - 4.9rem) / 8 * 0.66);
+  min-width: 46px;
+  max-width: 70px;
+  height: 180px;
+  border: 0;
+  border-radius: 0 0 18px 18px;
+  background: linear-gradient(180deg, #5d4b93, #26173e);
+  color: var(--white);
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 14px 24px rgba(38, 23, 62, 0.24);
+}
+
+.black-key-row .pos-1 { left: calc((100% / 8) * 0.7); }
+.black-key-row .pos-2 { left: calc((100% / 8) * 1.78); }
+.black-key-row .pos-4 { left: calc((100% / 8) * 3.82); }
+.black-key-row .pos-5 { left: calc((100% / 8) * 4.9); }
+.black-key-row .pos-6 { left: calc((100% / 8) * 5.98); }
+
+.piano-key.active {
+  transform: translateY(6px) scale(0.98);
+  filter: saturate(1.16);
+}
+
+.piano-key.white.active {
+  box-shadow:
+    inset 0 -8px 0 rgba(0, 0, 0, 0.1),
+    0 8px 18px rgba(111, 124, 255, 0.2);
+}
+
+.piano-key.black.active {
+  box-shadow: 0 8px 14px rgba(38, 23, 62, 0.3);
+}
+
+.coral { background: linear-gradient(180deg, #ffa3a3, var(--coral)); }
+.mango { background: linear-gradient(180deg, #ffd893, var(--mango)); }
+.lemon { background: linear-gradient(180deg, #fff3b0, var(--lemon)); }
+.mint { background: linear-gradient(180deg, #b0f4d4, var(--mint)); }
+.sky { background: linear-gradient(180deg, #a9e7ff, var(--sky)); }
+.blueberry { background: linear-gradient(180deg, #b6bcff, var(--blueberry)); }
+.grape { background: linear-gradient(180deg, #d1a2ff, var(--grape)); }
+.bubblegum { background: linear-gradient(180deg, #ffb4dd, var(--bubblegum)); }
+
+.fun-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.fun-card {
+  padding: 1.2rem 1.1rem;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+}
+
+.fun-title {
+  margin: 0 0 0.55rem;
+  color: #f15a9f;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.fun-card p:last-child,
+.fun-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.music-pop {
+  position: absolute;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-left: -22px;
+  margin-top: -22px;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+  animation: popFloat 900ms ease forwards;
+  background: hsl(var(--pop-hue, 320deg) 90% 68%);
+  box-shadow: 0 10px 24px rgba(255, 105, 180, 0.28);
+}
+
+.mode-sparkle {
+  border-radius: 14px;
+  transform: rotate(20deg);
+}
+
+.mode-bounce {
+  font-size: 1.55rem;
+}
+
+@keyframes popFloat {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(0, -110px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 980px) {
+  .piano-hero,
+  .piano-playground {
+    grid-template-columns: 1fr;
+  }
+
+  .control-panel {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .piano-shell {
+    width: min(100% - 1rem, 1180px);
+  }
+
+  .piano-copy,
+  .piano-frame {
+    padding: 1.2rem;
+  }
+
+  .piano-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar-pill,
+  .back-link {
+    width: 100%;
+  }
+
+  .piano-instructions {
+    text-align: left;
+  }
+
+  .white-key-row {
+    gap: 0.45rem;
+    grid-template-columns: repeat(8, minmax(42px, 1fr));
+  }
+
+  .piano-key.white {
+    min-height: 220px;
+    padding-top: 0.8rem;
+    border-radius: 18px;
+    font-size: 1rem;
+  }
+
+  .piano-key.white small {
+    font-size: 0.8rem;
+  }
+
+  .piano-key.black {
+    height: 130px;
+    font-size: 0.72rem;
+  }
+}
