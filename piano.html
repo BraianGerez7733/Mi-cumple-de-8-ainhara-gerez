@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Piano Mágico de Ainhara</title>
+  <meta
+    name="description"
+    content="Piano interactivo colorido y divertido para niñas, con efectos visuales y sonido."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="piano-page">
+  <main class="piano-shell">
+    <header class="piano-topbar">
+      <a class="back-link" href="/">Volver a la portada</a>
+      <div class="topbar-pill">Piano interactivo</div>
+    </header>
+
+    <section class="piano-hero">
+      <div class="piano-copy">
+        <p class="eyebrow">Modo fiesta</p>
+        <h1>Piano mágico para Ainhara y sus amigas</h1>
+        <p>
+          Tocá las teclas con el dedo, con el mouse o con el teclado.
+          Cada nota enciende luces, burbujas y un escenario súper colorido.
+        </p>
+      </div>
+
+      <div class="control-panel">
+        <button class="mode-button active" id="mode-rainbow" type="button">Arcoíris</button>
+        <button class="mode-button" id="mode-sparkle" type="button">Brillitos</button>
+        <button class="mode-button" id="mode-bounce" type="button">Saltitos</button>
+      </div>
+    </section>
+
+    <section class="piano-playground">
+      <div class="light-wall" id="light-wall" aria-hidden="true"></div>
+
+      <div class="piano-frame">
+        <div class="piano-header">
+          <div>
+            <p class="piano-label">Notas felices</p>
+            <h2 id="note-name">Tocá una tecla</h2>
+          </div>
+          <div class="piano-instructions">
+            <span>Teclado: A S D F G H J K</span>
+            <span>Negras: W E T Y U</span>
+          </div>
+        </div>
+
+        <div class="piano-board" id="piano-board">
+          <div class="black-key-row">
+            <button class="piano-key black pos-1" data-note="Db4" data-key="W">W</button>
+            <button class="piano-key black pos-2" data-note="Eb4" data-key="E">E</button>
+            <button class="piano-key black pos-4" data-note="Gb4" data-key="T">T</button>
+            <button class="piano-key black pos-5" data-note="Ab4" data-key="Y">Y</button>
+            <button class="piano-key black pos-6" data-note="Bb4" data-key="U">U</button>
+          </div>
+
+          <div class="white-key-row">
+            <button class="piano-key white coral" data-note="C4" data-key="A"><span>C</span><small>A</small></button>
+            <button class="piano-key white mango" data-note="D4" data-key="S"><span>D</span><small>S</small></button>
+            <button class="piano-key white lemon" data-note="E4" data-key="D"><span>E</span><small>D</small></button>
+            <button class="piano-key white mint" data-note="F4" data-key="F"><span>F</span><small>F</small></button>
+            <button class="piano-key white sky" data-note="G4" data-key="G"><span>G</span><small>G</small></button>
+            <button class="piano-key white blueberry" data-note="A4" data-key="H"><span>A</span><small>H</small></button>
+            <button class="piano-key white grape" data-note="B4" data-key="J"><span>B</span><small>J</small></button>
+            <button class="piano-key white bubblegum" data-note="C5" data-key="K"><span>C</span><small>K</small></button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="fun-panel">
+        <div class="fun-card">
+          <p class="fun-title">Mini reto</p>
+          <p id="challenge-text">Probá esta fila: C - D - E - F</p>
+        </div>
+        <div class="fun-card">
+          <p class="fun-title">Última nota</p>
+          <p id="last-key">Esperando música...</p>
+        </div>
+        <div class="fun-card">
+          <p class="fun-title">Consejo</p>
+          <p>Mantené pulsada una tecla y soltala para repetir ritmos divertidos.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script type="module" src="/piano.js"></script>
+</body>
+</html>

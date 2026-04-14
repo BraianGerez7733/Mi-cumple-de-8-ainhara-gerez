@@ -2,195 +2,60 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>🎀 Feliz Cumple Ainhara! 8 Añitos 🎀</title>
-  <meta name="description" content="Invitación mágica al cumpleaños de Ainhara - 8 añitos llenos de capibaras y magia!"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fiesta Musical de Ainhara</title>
+  <meta
+    name="description"
+    content="Portada divertida con acceso a un piano interactivo colorido para Ainhara y sus amigas."
+  />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-DvXNlLzN.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-BfLgkxff.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/main-Bl0y26R9.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/style-D7d67qjs.js">
+  <link rel="stylesheet" crossorigin href="/assets/style-2Fq-LWl5.css">
 </head>
-<body>
-  <!-- NAV sticky -->
-  <nav id="main-nav">
-    <div class="nav-brand">🎀 Ainhara 8</div>
-    <div class="nav-links">
-      <a href="#gravity">✨ Magia</a>
-      <a href="#game">🎮 Juego</a>
-      <a href="#messages">💌 Mensajes</a>
-      <a href="#rsvp">🎉 Asistencia</a>
-      <a href="#ranking">🏆 Ranking</a>
-    </div>
-  </nav>
+<body class="home-page">
+  <main class="landing-shell">
+    <section class="hero-card">
+      <div class="hero-copy">
+        <p class="eyebrow">Cumple de Ainhara</p>
+        <h1>Un rincón musical lleno de color, brillo y juegos.</h1>
+        <p class="hero-text">
+          Preparé una portada alegre y un piano mágico en otra página para que Ainhara,
+          sus amigas y toda la fiesta puedan tocar canciones y divertirse.
+        </p>
+        <div class="hero-actions">
+          <a class="hero-button" href="/piano.html">Ir al Piano Mágico</a>
+        </div>
+        <ul class="hero-points">
+          <li>Teclas gigantes y fáciles de tocar</li>
+          <li>Colores vivos pensados para peques</li>
+          <li>Funciona con mouse, táctil y teclado</li>
+        </ul>
+      </div>
 
-  <!-- SECCIÓN 1: ANTI-GRAVITY HERO -->
-  <section id="gravity" class="gravity-section">
-    <canvas id="gravity-canvas"></canvas>
-
-    <!-- Cartel que cae con física -->
-    <div id="birthday-card">
-      <h1 class="hero-title">¡Feliz<br>Cumpleaños<br>Ainhara!</h1>
-      <p class="hero-subtitle">🎀 8 Añitos mágicos 🎀</p>
-    </div>
-
-    <div id="gravity-ui">
-      <p class="hero-hint">👆 ¡Tocá los emojis para agarrarlos!</p>
-      <div class="gravity-controls">
-        <button class="magic-btn rain-btn" id="rain-hearts">💖 Lluvia de amor</button>
-        <button class="magic-btn rain-btn" id="rain-gifts">🎁 Lluvia de regalos</button>
-        <button class="magic-btn" id="toggle-gravity">⬆️ Anti-Gravedad</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 2: JUEGO CAPIBARA -->
-  <section id="game" class="section-wrap">
-    <div class="section-header">
-      <h2 class="section-title">🎮 ¡Juego del Capibara!</h2>
-      <p class="section-sub">Ayudá a Capy a recolectar regalos. ¡Evitá los charcos!</p>
-    </div>
-    <div class="game-layout">
-      <div class="game-panel">
-        <div class="player-setup" id="player-setup">
-          <label>Tu nombre:</label>
-          <input id="player-name" type="text" placeholder="Escribe tu nombre..." maxlength="20"/>
-          <button class="magic-btn" id="start-game-btn">🚀 ¡Empezar!</button>
+      <div class="hero-stage" aria-hidden="true">
+        <div class="stage-cloud cloud-one"></div>
+        <div class="stage-cloud cloud-two"></div>
+        <div class="stage-rainbow"></div>
+        <div class="stage-star star-one">★</div>
+        <div class="stage-star star-two">✦</div>
+        <div class="stage-star star-three">✸</div>
+        <div class="stage-bubble bubble-one"></div>
+        <div class="stage-bubble bubble-two"></div>
+        <div class="stage-bubble bubble-three"></div>
+        <div class="mini-piano">
+          <span class="mini-key coral"></span>
+          <span class="mini-key gold"></span>
+          <span class="mini-key mint"></span>
+          <span class="mini-key sky"></span>
+          <span class="mini-key grape"></span>
         </div>
-        <div class="game-stats hidden" id="game-stats">
-          <div class="stat-chip">⭐ <span id="score-display">0</span></div>
-          <div class="stat-chip">❤️ <span id="lives-display">3</span></div>
-          <div class="stat-chip">🌊 Nivel: <span id="level-display">1</span></div>
-        </div>
+        <div class="stage-badge">7+ amigas</div>
       </div>
-      <div class="canvas-wrap">
-        <canvas id="game-canvas" width="500" height="300"></canvas>
-        <div class="game-overlay hidden" id="game-over-overlay">
-          <div class="overlay-card">
-            <p class="overlay-emoji">🐾</p>
-            <h3 id="overlay-title">¡Juego terminado!</h3>
-            <p id="overlay-score"></p>
-            <button class="magic-btn" id="play-again-btn">🔄 Jugar de nuevo</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 3: MURO DE MENSAJES -->
-  <section id="messages" class="section-wrap alt-bg">
-    <div class="section-header">
-      <h2 class="section-title">💌 Mensajes para Ainhara</h2>
-      <p class="section-sub">Dejá tu mensajito especial para la cumpleañera 🥰</p>
-    </div>
-    <div class="messages-layout">
-      <div class="message-form-card">
-        <div class="form-field">
-          <label>Tu nombre</label>
-          <input id="msg-name" type="text" placeholder="¿Cómo te llamás?" maxlength="30"/>
-        </div>
-        <div class="form-field">
-          <label>Tu mensaje</label>
-          <textarea id="msg-text" placeholder="Escribí algo lindo para Ainhara 💕" rows="4" maxlength="300"></textarea>
-        </div>
-        <button class="magic-btn full-btn" id="send-message-btn">💖 Enviar mensaje</button>
-        <p class="form-feedback hidden" id="msg-feedback"></p>
-      </div>
-      <div class="messages-wall" id="messages-wall">
-        <div class="wall-loading" id="wall-loading">Cargando mensajes... ✨</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 4: RSVP -->
-  <section id="rsvp" class="section-wrap">
-    <div class="section-header">
-      <h2 class="section-title">🎉 ¿Venís a la fiesta?</h2>
-      <p class="section-sub">Confirmá tu asistencia para que Ainhara sepa quién viene 🎈</p>
-    </div>
-    <div class="rsvp-layout">
-      <div class="rsvp-form-card">
-        <div class="form-field">
-          <label>Tu nombre</label>
-          <input id="rsvp-name" type="text" placeholder="¿Cómo te llamás?" maxlength="30"/>
-        </div>
-        <div class="form-field">
-          <label>¿Venís?</label>
-          <div class="rsvp-choices">
-            <label class="choice-card" id="choice-yes">
-              <input type="radio" name="attendance" value="yes"/>
-              <span class="choice-emoji">🎉</span>
-              <span>¡Sí voy!</span>
-            </label>
-            <label class="choice-card" id="choice-no">
-              <input type="radio" name="attendance" value="no"/>
-              <span class="choice-emoji">😢</span>
-              <span>No puedo</span>
-            </label>
-          </div>
-        </div>
-        <div class="form-field">
-          <label>Mensaje opcional</label>
-          <input id="rsvp-msg" type="text" placeholder="¿Algo más que quieras decir?" maxlength="100"/>
-        </div>
-        <button class="magic-btn full-btn" id="send-rsvp-btn">✅ Confirmar asistencia</button>
-        <p class="form-feedback hidden" id="rsvp-feedback"></p>
-      </div>
-      <div class="rsvp-board">
-        <div class="rsvp-counter">
-          <div class="counter-pill yes"><span id="count-yes">0</span> Van 🎉</div>
-          <div class="counter-pill no"><span id="count-no">0</span> No pueden 😢</div>
-        </div>
-        <div class="rsvp-list" id="rsvp-list">
-          <div class="wall-loading">Cargando confirmaciones... ✨</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 5: RANKING -->
-  <section id="ranking" class="section-wrap alt-bg">
-    <div class="section-header">
-      <h2 class="section-title">🏆 Top Jugadores</h2>
-      <p class="section-sub">Los mejores domadores de capibaras 🐾</p>
-    </div>
-    <div class="ranking-board" id="ranking-board">
-      <div class="wall-loading">Cargando ranking... ✨</div>
-    </div>
-  </section>
-
-  <!-- SECCIÓN 6: CAROUSEL / GALERÍA -->
-  <section id="gallery" class="section-wrap">
-    <div class="section-header">
-      <h2 class="section-title">📸 Galería Mágica</h2>
-      <p class="section-sub">¡Momentos divertidos con Ainhara y los capibaras! 💖</p>
-    </div>
-    <div class="carousel-container">
-      <div class="carousel-slide fade">
-        <img src="/assets/capybara1-DGfX3rDh.png" alt="Capibara de cumpleaños">
-      </div>
-      <div class="carousel-slide fade">
-        <img src="/assets/capybara2-C14tViQI.png" alt="Torta majestuosa">
-      </div>
-      <div class="carousel-slide fade">
-        <img src="/assets/capybara3-CVU-XAZL.png" alt="Regalos especiales">
-      </div>
-      
-      <!-- Controles -->
-      <a class="carousel-prev" id="c-prev">&#10094;</a>
-      <a class="carousel-next" id="c-next">&#10095;</a>
-    </div>
-    <div class="carousel-dots">
-      <span class="dot" data-slide="1"></span>
-      <span class="dot" data-slide="2"></span>
-      <span class="dot" data-slide="3"></span>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <p>🎀 Cumpleaños de Ainhara Abigail · 8 Añitos · Con todo el amor 💖</p>
-  </footer>
+    </section>
+  </main>
 
 </body>
 </html>
